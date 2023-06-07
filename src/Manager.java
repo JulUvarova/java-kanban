@@ -8,10 +8,12 @@ public class Manager {
     HashMap<Integer, Epic> epics = new HashMap<>();
     HashMap<Integer, SubTask> subTasks = new HashMap<>();
     private static int staticId = 0;
+
     public static int getID(){
         staticId++;
         return staticId;
     }
+
 // methods for usual task
     public String getAllTasks() {
         return tasks.toString();
@@ -21,6 +23,7 @@ public class Manager {
         tasks.clear();
         return String.valueOf(tasks);
     }
+
     public Task getTaskById(int taskId) {
         return tasks.get(taskId);
     }
@@ -51,6 +54,7 @@ public class Manager {
         subTasks.clear();
         return String.valueOf(subTasks);
     }
+
     public Task getSubTaskById(int taskId) {
         return subTasks.get(taskId);
     }
@@ -58,7 +62,7 @@ public class Manager {
     public Task addSubTask(SubTask task, int epicID) {
         staticId = Manager.getID();
         subTasks.put(staticId, task);
-        epics.get(epicID).subTaskId.add(staticId);
+        epics.get(epicID).setSubTaskId(staticId);
         return subTasks.get(staticId);
     }
 
@@ -84,6 +88,7 @@ public class Manager {
         subTasks.clear();
         return String.valueOf(epics);
     }
+
     public Epic getEpicById(int taskId) {
         return epics.getOrDefault(taskId, null);
     }

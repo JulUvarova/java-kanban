@@ -1,8 +1,9 @@
 import java.util.List;
 
 class Epic extends Task {
-    List<Integer> subTaskId;
-    TaskStatus status = TaskStatus.NEW;
+
+    private List<Integer> subTaskId;
+    private TaskStatus status = TaskStatus.NEW;
 
     @Override
     public TaskStatus getStatus() {
@@ -12,6 +13,7 @@ class Epic extends Task {
     public List<Integer> getSubTaskId() {
         return subTaskId;
     }
+
     public Epic(String name, String description, List<Integer> subTaskId) {
         super(name, description);
         this.subTaskId = subTaskId;
@@ -23,11 +25,13 @@ class Epic extends Task {
         this.status = status;
     }
 
-
-    public void setSubTaskId(List<Integer> subTaskId) {
-        this.subTaskId = subTaskId;
+    public void setStatus(TaskStatus status) {
+        this.status = status;
     }
 
+    public void setSubTaskId(int iD) {
+        subTaskId.add(iD);
+    }
 
     @Override
     public String toString() {
@@ -38,5 +42,4 @@ class Epic extends Task {
                 ", status=" + getStatus() +
                 '}';
     }
-
 }

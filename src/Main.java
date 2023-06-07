@@ -31,7 +31,7 @@ public class Main {
         System.out.println("Обновили эпик " + manager.updateEpic(3, "Заварить чай", " "));
         System.out.println("Поменяли статус подзадачи 2 " + manager.updateSubTask(5, "Добавить кипяток", " ", TaskStatus.DONE));
         System.out.println("Обновили эпик " + manager.updateEpic(3, "Заварить чай", " "));
-        System.out.println("Удалили подзадачи из эпика " + manager.deleteSubTaskById(4));
+        System.out.println("Удалили одну подзадачу из эпика " + manager.deleteSubTaskById(4));
         System.out.println("Обновили эпик " + manager.updateEpic(3, "Заварить чай", " "));
         System.out.println("Очистили подзадачи " + manager.clearAllSubTasks());
         System.out.println("Обновили эпик " + manager.updateEpic(3, "Заварить чай", " "));
