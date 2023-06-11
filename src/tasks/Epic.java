@@ -1,6 +1,8 @@
+package tasks;
+
 import java.util.List;
 
-class Epic extends Task {
+public class Epic extends Task {
 
     private List<Integer> subTaskId;
     private TaskStatus status = TaskStatus.NEW;
@@ -35,7 +37,7 @@ class Epic extends Task {
 
     @Override
     public String toString() {
-        return "Epic{" +
+        return "tasks.Epic{" +
                 "name='" + getName() + '\'' +
                 ", description='" + getDescription() + '\'' +
                 ", subTaskId=" + getSubTaskId() + '\'' +

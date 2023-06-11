@@ -1,3 +1,5 @@
+package managers;
+
 public class Managers {
     public static TaskManager getDefaultTaskManager() {
         return new InMemoryTaskManager();
@@ -7,3 +9,4 @@ public class Managers {
         return new InMemoryHistoryManager();
     }
 }
+

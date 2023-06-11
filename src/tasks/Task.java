@@ -1,4 +1,6 @@
-class Task {
+package tasks;
+
+public class Task {
     private String name;
     private String description;
     private TaskStatus status;
@@ -40,7 +42,7 @@ class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "tasks.Task{" +
                 "name='" + getName() + '\'' +
                 ", description='" + getDescription() + '\'' +
                 ", status=" + getStatus() +

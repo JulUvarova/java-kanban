@@ -1,3 +1,8 @@
+import managers.Managers;
+import managers.TaskManager;
+import tasks.Task;
+import tasks.TaskStatus;
+
 public class Main {
     public static void main(String[] args) {
         TaskManager manager = Managers.getDefaultTaskManager();
