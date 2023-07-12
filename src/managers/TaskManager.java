@@ -52,6 +52,5 @@ public interface TaskManager {
 
     // other
     List<Task> getHistory();
-
 }
 
