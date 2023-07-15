@@ -32,14 +32,18 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public String clearAllTasks() {
+        for (int id : tasks.keySet()) {
+            historyManager.remove(id);
+        }
         tasks.clear();
         return String.valueOf(tasks);
     }
 
     @Override
     public Task getTaskById(int taskId) {
-        historyManager.add(taskId, tasks.get(taskId));
-        return tasks.get(taskId);
+        Task task = tasks.get(taskId);
+        historyManager.add(taskId, task);
+        return task;
     }
 
     @Override
@@ -71,14 +75,18 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public String clearAllSubTasks() {
+        for (int id : subTasks.keySet()) {
+            historyManager.remove(id);
+        }
         subTasks.clear();
         return String.valueOf(subTasks);
     }
 
     @Override
     public Task getSubTaskById(int taskId) {
-        historyManager.add(taskId, subTasks.get(taskId));
-        return subTasks.get(taskId);
+        SubTask task = subTasks.get(taskId);
+        historyManager.add(taskId, task);
+        return task;
     }
 
     @Override
@@ -98,7 +106,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public String deleteSubTaskById(int taskId) {
-        //subTaskId.remove(taskId);
         subTasks.remove(taskId);
         historyManager.remove(taskId);
         return String.valueOf(subTasks.getOrDefault(taskId, null));
@@ -111,6 +118,12 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public String clearAllEpics() {
+        for (int id : subTasks.keySet()) {
+            historyManager.remove(id);
+        }
+        for (int id : epics.keySet()) {
+            historyManager.remove(id);
+        }
         epics.clear();
         subTasks.clear();
         return String.valueOf(epics);
@@ -118,8 +131,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Epic getEpicById(int taskId) {
-        historyManager.add(taskId, epics.get(taskId));
-        return epics.getOrDefault(taskId, null);
+        Epic task = epics.get(taskId);
+        historyManager.add(taskId, task);
+        return task;
     }
 
     @Override
