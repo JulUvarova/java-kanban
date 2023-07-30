@@ -1,47 +1,58 @@
 package tasks;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 
 public class Epic extends Task {
 
-    private List<Integer> subTaskId = new ArrayList<>();
+    private HashSet<Integer> subTaskId = new HashSet<>();
     private TaskStatus status = TaskStatus.NEW;
+    private final TaskType taskType;
+    private int id;
 
-    @Override
+    public Epic(String name, String description) {
+        super(name, description);
+        this.taskType = TaskType.EPIC;
+    }
+
+    public Epic(int id, String name, String description, HashSet<Integer> subTaskId, TaskStatus status) {
+        super(name, description);
+        this.id = id;
+        this.subTaskId = subTaskId;
+        this.status = status;
+        this.taskType = TaskType.EPIC;
+    }
+
     public TaskStatus getStatus() {
         return status;
     }
 
-    public List<Integer> getSubTaskId() {
+    public HashSet<Integer> getSubTaskId() {
         return subTaskId;
     }
 
-    public Epic(String name, String description) {
-        super(name, description);
-        //this.subTaskId = subTaskId;
+    public void setID(int id) {
+        this.id = id;
     }
 
-    public Epic(String name, String description, List<Integer> subTaskId, TaskStatus status) {
-        super(name, description);
-        this.subTaskId = subTaskId;
-        this.status = status;
-    }
-
-    public void setStatus(TaskStatus status) {
-        this.status = status;
+    public int getID() {
+        return id;
     }
 
     public void setSubTaskId(int iD) {
         subTaskId.add(iD);
     }
 
+    public TaskType getTaskType() {
+        return taskType;
+    }
+
     @Override
     public String toString() {
-        return "tasks.Epic{" +
-                "name='" + getName() + '\'' +
-                ", description='" + getDescription() + '\'' +
-                ", subTaskId=" + getSubTaskId() + '\'' +
+        return "{" + getTaskType() +
+                " id=" + getID() +
+                ", name=" + getName() +
+                ", description=" + getDescription() +
+                ", subTaskId=" + getSubTaskId() +
                 ", status=" + getStatus() +
                 '}';
     }

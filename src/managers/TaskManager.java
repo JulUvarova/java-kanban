@@ -10,43 +10,43 @@ import java.util.List;
 
 public interface TaskManager {
     // methods for usual task
-    String getAllTasks();
+    void getAllTasks();
 
-    String clearAllTasks();
+    void clearAllTasks();
 
-    Task getTaskById(int taskId);
+    void getTaskById(int taskId);
 
-    Task addTask(Task task);
+    void addTask(Task task);
 
-    Task updateTask(int iD, String name, String description, TaskStatus status);
+    void updateTask(int iD, String name, String description, TaskStatus status);
 
-    String deleteTaskById(int taskId);
+    void deleteTaskById(int taskId);
 
     // methods for subtask
-    String getAllSubTasks();
+    void getAllSubTasks();
 
-    String clearAllSubTasks();
+    void clearAllSubTasks();
 
-    Task getSubTaskById(int taskId);
+    void getSubTaskById(int taskId);
 
-    Task addSubTask(SubTask task, int epicID);
+    void addSubTask(SubTask task, int epicID);
 
-    Task updateSubTask(int iD, String name, String description, TaskStatus status);
+    void updateSubTask(int iD, String name, String description, TaskStatus status);
 
-    String deleteSubTaskById(int taskId);
+    void deleteSubTaskById(int taskId);
 
     // methods for epic
-    String getAllEpics();
+    void getAllEpics();
 
-    String clearAllEpics();
+    void clearAllEpics();
 
-    Epic getEpicById(int taskId);
+    void getEpicById(int taskId);
 
-    Epic addEpic(Epic task);
+    void addEpic(Epic task);
 
-    Epic updateEpic(int iD, String name, String description);
+    void updateEpic(int iD, String name, String description);
 
-    String deleteEpicById(int taskId);
+    void deleteEpicById(int taskId);
 
     ArrayList<SubTask> getSubTaskByEpic(int epicId);
 

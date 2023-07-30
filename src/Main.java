@@ -7,39 +7,20 @@ import tasks.TaskStatus;
 
 public class Main {
     public static void main(String[] args) {
-        TaskManager manager = Managers.getDefaultTaskManager();
+        TaskManager manager = Managers.getDefaultNewTaskManager("saveFile.csv");
 
-        System.out.println("Создали задачу: " + manager.addTask(
-                new Task("(1)", "...", TaskStatus.NEW)));
-        System.out.println("Создали задачу: " + manager.addTask(
-                new Task("2", "...", TaskStatus.NEW)));
-        System.out.println("Создали новый эпик: " + manager.addEpic(
-                new Epic("(3)", "...")));
-        System.out.println("Создали подзадачу в эпик: " + manager.addSubTask(
-                new SubTask("(4/3)", "...", TaskStatus.NEW), 3));
-        System.out.println("Создали подзадачу в эпик: " + manager.addSubTask(
-                new SubTask("(5/3)", "...", TaskStatus.NEW), 3));
-        System.out.println("Создали подзадачу в эпик: " + manager.addSubTask(
-                new SubTask("(6/3)", "...", TaskStatus.NEW), 3));
-        System.out.println("Создали новый эпик без подзадач: " + manager.addEpic(
-                new Epic("(7)", "...")));
+        System.out.println("Создаем задачи:");
+        manager.addTask(new Task("1", "nn", TaskStatus.NEW));
+        manager.addEpic(new Epic("2", "nk"));
+        manager.addSubTask(new SubTask("3","cdcd", TaskStatus.NEW), 2);
 
-        System.out.println("Запросили эпик 7: " + manager.getEpicById(7));
-        System.out.println("Запросили подзадачу 5: " + manager.getSubTaskById(5));
-        System.out.println("Запросили эпик 3: " + manager.getEpicById(3));
-        System.out.println("Запросили задачу 1: " + manager.getTaskById(1));
-        System.out.println("Проверили историю: " + manager.getHistory());
+        System.out.println("Выводим задачи:");
+        manager.getEpicById(2);
+        manager.getSubTaskById(3);
 
-        System.out.println("Запросили задачу 1: " + manager.getTaskById(1));
-        System.out.println("Запросили эпик 3: " + manager.getEpicById(3));
-        System.out.println("Запросили подзадачу 5: " + manager.getSubTaskById(5));
-        System.out.println("Запросили эпик 7: " + manager.getEpicById(7));
-        System.out.println("Проверили историю: " + manager.getHistory());
+        System.out.println("Смотрим историю:");
+        System.out.println(manager.getHistory());
 
-        System.out.println("Удалили задачу 1: " + manager.deleteTaskById(1));
-        System.out.println("Проверили историю: " + manager.getHistory());
 
-        System.out.println("Удалили эпик 3: " + manager.deleteEpicById(3));
-        System.out.println("Проверили историю: " + manager.getHistory());
     }
 }
