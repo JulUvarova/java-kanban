@@ -1,55 +1,47 @@
 package tasks;
 
 import java.util.HashSet;
+import java.util.Set;
 
 public class Epic extends Task {
 
-    private HashSet<Integer> subTaskId = new HashSet<>();
+    private Set<Integer> subTaskId = new HashSet<>();
     private TaskStatus status = TaskStatus.NEW;
-    private final TaskType taskType;
-    private int id;
 
     public Epic(String name, String description) {
         super(name, description);
-        this.taskType = TaskType.EPIC;
     }
 
-    public Epic(int id, String name, String description, HashSet<Integer> subTaskId, TaskStatus status) {
-        super(name, description);
-        this.id = id;
+    public Epic(int id, String name, String description, Set<Integer> subTaskId, TaskStatus status) {
+        super(id, name, description, status);
         this.subTaskId = subTaskId;
-        this.status = status;
-        this.taskType = TaskType.EPIC;
     }
 
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public HashSet<Integer> getSubTaskId() {
+    public Set<Integer> getSubTaskId() {
         return subTaskId;
     }
 
-    public void setID(int id) {
-        this.id = id;
+    public void addSubTaskId(int id) {
+        subTaskId.add(id);
     }
 
-    public int getID() {
-        return id;
+    public void deleteSubTaskId(int id) {
+        subTaskId.remove(id);
     }
 
-    public void setSubTaskId(int iD) {
-        subTaskId.add(iD);
+    public void clearSubtasksId() {
+        subTaskId.clear();
     }
 
+    @Override
     public TaskType getTaskType() {
-        return taskType;
+        return TaskType.EPIC;
     }
 
     @Override
     public String toString() {
         return "{" + getTaskType() +
-                " id=" + getID() +
+                " id=" + getId() +
                 ", name=" + getName() +
                 ", description=" + getDescription() +
                 ", subTaskId=" + getSubTaskId() +

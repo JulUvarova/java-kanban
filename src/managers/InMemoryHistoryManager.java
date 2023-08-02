@@ -1,6 +1,7 @@
 package managers;
 
 import tasks.Task;
+
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
@@ -12,10 +13,10 @@ public class InMemoryHistoryManager implements HistoryManager {
     private Map<Integer, Node<Task>> customLinkedList = new HashMap<>();
 
     @Override
-    public void add(int id, Task task) {
-        removeNode(customLinkedList.get(id));
-        Node newNode = linkLast(task);
-        customLinkedList.put(id, newNode);
+    public void add(Task task) {
+        removeNode(customLinkedList.get(task.getId()));
+        Node<Task> newNode = linkLast(task);
+        customLinkedList.put(task.getId(), newNode);
     }
 
     @Override
@@ -25,8 +26,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void remove(int id) {
-       removeNode(customLinkedList.get(id));
-       customLinkedList.remove(id);
+        removeNode(customLinkedList.remove(id));
     }
 
     private Node<Task> linkLast(Task task) {
@@ -51,28 +51,33 @@ public class InMemoryHistoryManager implements HistoryManager {
         return history;
     }
 
-    private void removeNode(Node x) {
-       if (x != null) {
-           Node next = x.next;
-           Node prev = x.prev;
+    private void removeNode(Node<Task> node) {
+        if (node != null) {
+            Node<Task> next = node.next;
+            Node<Task> prev = node.prev;
 
-           if (prev == null) {
-               head = next;
-               head.prev = null;
-           } else {
-               prev.next = next;
-           }
+            if (prev == null && next == null) {
+                head = null;
+                tail = null;
+            }
 
-           if (next == null) {
-               tail = prev;
-               tail.next = null;
-           } else {
-               next.prev = prev;
-           }
-       }
-   }
+            if (prev == null) {
+                head = next;
+                head.prev = null;
+            } else {
+                prev.next = next;
+            }
 
-    private class Node<T> {
+            if (next == null) {
+                tail = prev;
+                tail.next = null;
+            } else {
+                next.prev = prev;
+            }
+        }
+    }
+
+    private static class Node<T> {
         public T data;
         public Node<T> next;
         public Node<T> prev;

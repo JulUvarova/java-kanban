@@ -1,8 +1,10 @@
 package managers;
 
-import java.nio.file.Files;
-
 public class Managers {
+
+    private Managers() {
+    }
+
     public static TaskManager getDefaultTaskManager() {
         return new InMemoryTaskManager();
     }
