@@ -59,6 +59,7 @@ public class InMemoryHistoryManager implements HistoryManager {
             if (prev == null && next == null) {
                 head = null;
                 tail = null;
+                return;
             }
 
             if (prev == null) {
@@ -82,7 +83,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         public Node<T> next;
         public Node<T> prev;
 
-        public Node(Node prev, T data, Node next) {
+        public Node(Node<T> prev, T data, Node<T> next) {
             this.data = data;
             this.next = next;
             this.prev = prev;

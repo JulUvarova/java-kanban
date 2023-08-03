@@ -16,11 +16,6 @@ public class InMemoryTaskManager implements TaskManager {
         this.historyManager = Managers.getDefaultHistoryManager();
     }
 
-    public int getStaticId() {
-        staticId++;
-        return staticId;
-    }
-
     // methods for usual task
     @Override
     public List<Task> getAllTasks() {
@@ -37,11 +32,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTaskById(int taskId) {
-        if (!tasks.containsKey(taskId)) {
-            return null;
-        }
         Task task = tasks.get(taskId);
-        historyManager.add(task);
+        if (task != null) {
+            historyManager.add(task);
+        }
         return task;
     }
 
@@ -90,11 +84,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public SubTask getSubTaskById(int taskId) {
-        if (!subTasks.containsKey(taskId)) {
-            return null;
-        }
         SubTask task = subTasks.get(taskId);
-        historyManager.add(task);
+        if (task != null) {
+            historyManager.add(task);
+        }
         return task;
     }
 
@@ -113,8 +106,8 @@ public class InMemoryTaskManager implements TaskManager {
     public SubTask updateSubTask(SubTask task) {
         int subTaskId = task.getId();
         if (subTasks.containsKey(subTaskId)) {
-            setEpicStatus(task.getEpicId());
             subTasks.put(subTaskId, task);
+            setEpicStatus(task.getEpicId());
         } else {
             return null;
         }
@@ -151,11 +144,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Epic getEpicById(int taskId) {
-        if (!epics.containsKey(taskId)) {
-            return null;
-        }
         Epic task = epics.get(taskId);
-        historyManager.add(task);
+        if (task != null) {
+            historyManager.add(task);
+        }
         return task;
     }
 
@@ -177,29 +169,6 @@ public class InMemoryTaskManager implements TaskManager {
             return null;
         }
         return task;
-    }
-
-    public void setEpicStatus(int id) {
-        Epic epic = epics.get(id);
-        Set<Integer> subTaskId = epic.getSubTaskId();
-        List<TaskStatus> subTaskStatus = new ArrayList<>();
-        for (int subNumber : subTaskId) {
-            SubTask sub = subTasks.get(subNumber);
-            if (sub != null) {
-                subTaskStatus.add(sub.getStatus());
-            }
-        }
-        TaskStatus status;
-        boolean isAllNew = subTaskStatus.stream().allMatch(s -> s == TaskStatus.NEW);
-        boolean isAllDone = subTaskStatus.stream().allMatch(s -> s == TaskStatus.DONE);
-        if (subTaskStatus.isEmpty() || isAllNew) {
-            status = TaskStatus.NEW;
-        } else if (isAllDone) {
-            status = TaskStatus.DONE;
-        } else {
-            status = TaskStatus.IN_PROGRESS;
-        }
-        epic.setStatus(status);
     }
 
     @Override
@@ -233,5 +202,33 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Task> getHistory() {
         return historyManager.getHistory();
+    }
+
+    private int getStaticId() {
+        staticId++;
+        return staticId;
+    }
+
+    private void setEpicStatus(int id) {
+        Epic epic = epics.get(id);
+        Set<Integer> subTaskId = epic.getSubTaskId();
+        List<TaskStatus> subTaskStatus = new ArrayList<>();
+        for (int subNumber : subTaskId) {
+            SubTask sub = subTasks.get(subNumber);
+            if (sub != null) {
+                subTaskStatus.add(sub.getStatus());
+            }
+        }
+        TaskStatus status;
+        boolean isAllNew = subTaskStatus.stream().allMatch(s -> s == TaskStatus.NEW);
+        boolean isAllDone = subTaskStatus.stream().allMatch(s -> s == TaskStatus.DONE);
+        if (subTaskStatus.isEmpty() || isAllNew) {
+            status = TaskStatus.NEW;
+        } else if (isAllDone) {
+            status = TaskStatus.DONE;
+        } else {
+            status = TaskStatus.IN_PROGRESS;
+        }
+        epic.setStatus(status);
     }
 }
