@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Collections;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
     private final String saveFile;
@@ -25,10 +26,16 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 + fbtm.getAllSubTasks()
                 + fbtm.getAllTasks());
         System.out.println("Проверяем историю просмотров:" + fbtm.getHistory());
-        System.out.println("Проверяем не сбилось ли ID");
-        fbtm.addTask(new Task("4", "nkk", TaskStatus.NEW));
-        System.out.println("Просматриваем созданную задачу" + fbtm.getTaskById(4));
-        System.out.println("Проверяем историю просмотров:" + fbtm.getHistory());
+
+//        System.out.println("Проверяем не сбилось ли ID");
+//        fbtm.addTask(new Task("4", "nkk", TaskStatus.NEW));
+//        System.out.println("Просматриваем созданную задачу" + fbtm.getTaskById(4));
+//        System.out.println("Проверяем историю просмотров:" + fbtm.getHistory());
+//
+//        System.out.println("Проверяем обновление эпика: подзадача теперь DONE ");
+//        fbtm.updateSubTask(new SubTask(3, "3up", "3", TaskStatus.DONE, 2));
+//        System.out.println("Просматриваем epic 2 " + fbtm.getEpicById(2));
+//        System.out.println("Проверяем историю просмотров:" + fbtm.getHistory());
     }
 
     public static FileBackedTasksManager loadFromFile(String readFile, String writeFile) {
@@ -64,13 +71,15 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                             continue;
                         case SUBTASK:
                             loadBTM.subTasks.put(task.getId(), (SubTask) task);
+                            SubTask subtask = (SubTask) task;
+                            loadBTM.subTasks.put(id, subtask);
+                            Epic epic = loadBTM.epics.get(subtask.getEpicId());
+                            epic.addSubTaskId(id);
                     }
                 }
             }
         } catch (IOException e) {
             throw new ManagerSaveException("Такого файла не существует");
-        } catch (NullPointerException e) {
-            throw new ManagerSaveException("Файл сохранения пустой");
         }
         return loadBTM;
     }
@@ -210,7 +219,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         save();
     }
 
-
     private void save() {
         try (FileWriter fileWriter = new FileWriter(saveFile)) {
             fileWriter.write(SAVEFILE_HEADLINE);
@@ -274,6 +282,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     private static List<Integer> historyFromString(String value) {
+        if (value == null) {
+            return Collections.emptyList();
+        }
         String[] line = value.split(",");
         List<Integer> historyFromString = new ArrayList<>();
         for (int i = 0; i < line.length; i++) {
