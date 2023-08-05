@@ -36,7 +36,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 //        fbtm.updateSubTask(new SubTask(3, "3up", "3", TaskStatus.DONE, 2));
 //        System.out.println("Просматриваем epic 2 " + fbtm.getEpicById(2));
 //        System.out.println("Проверяем историю просмотров:" + fbtm.getHistory());
-
     }
 
     public static FileBackedTasksManager loadFromFile(String readFile, String writeFile) {
