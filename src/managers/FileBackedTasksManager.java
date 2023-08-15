@@ -4,15 +4,16 @@ import exceptions.*;
 import tasks.*;
 
 import java.io.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Collections;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
     private final String saveFile;
-    private static final String SAVEFILE_HEADLINE = "id,type,name,status,description,epic";
+    private static final String SAVEFILE_HEADLINE = "id,type,name,status,description,startTime,duration,endTime,epic";
 
     public FileBackedTasksManager(String saveFile) {
         this.saveFile = saveFile;
@@ -26,16 +27,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 + fbtm.getAllSubTasks()
                 + fbtm.getAllTasks());
         System.out.println("Проверяем историю просмотров:" + fbtm.getHistory());
-
-//        System.out.println("Проверяем не сбилось ли ID");
-//        fbtm.addTask(new Task("4", "nkk", TaskStatus.NEW));
-//        System.out.println("Просматриваем созданную задачу" + fbtm.getTaskById(4));
-//        System.out.println("Проверяем историю просмотров:" + fbtm.getHistory());
-//
-//        System.out.println("Проверяем обновление эпика: подзадача теперь DONE ");
-//        fbtm.updateSubTask(new SubTask(3, "3up", "3", TaskStatus.DONE, 2));
-//        System.out.println("Просматриваем epic 2 " + fbtm.getEpicById(2));
-//        System.out.println("Проверяем историю просмотров:" + fbtm.getHistory());
     }
 
     public static FileBackedTasksManager loadFromFile(String readFile, String writeFile) {
@@ -70,7 +61,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                             loadBTM.epics.put(task.getId(), (Epic) task);
                             continue;
                         case SUBTASK:
-                            loadBTM.subTasks.put(task.getId(), (SubTask) task);
                             SubTask subtask = (SubTask) task;
                             loadBTM.subTasks.put(id, subtask);
                             Epic epic = loadBTM.epics.get(subtask.getEpicId());
@@ -242,8 +232,14 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     private String toString(Task task) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n").append(task.getId()).append(",").append(task.getTaskType()).append(",").append(task.getName())
-                .append(",").append(task.getStatus()).append(",").append(task.getDescription());
+        sb.append("\n").append(task.getId()).append(",")
+                .append(task.getTaskType()).append(",")
+                .append(task.getName()).append(",")
+                .append(task.getStatus()).append(",")
+                .append(task.getDescription()).append(",")
+                .append(task.getStartTime()).append(",")
+                .append(task.getDuration()).append(",")
+                .append(task.getEndTime());
         if (task.getTaskType() == TaskType.SUBTASK) {
             SubTask subTask = (SubTask) task;
             sb.append(",").append(subTask.getEpicId());
@@ -260,17 +256,30 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String name = line[2];
         TaskStatus taskStatus = TaskStatus.valueOf(line[3]);
         String description = line[4];
+        LocalDateTime startTime = null;
+        if (!line[5].equals("null")) {
+            startTime = LocalDateTime.parse(line[5]);
+        }
+        Duration duration = null;
+        if (!line[6].equals("null")) {
+           duration = Duration.parse(line[6]);
+        }
 
         switch (taskType) {
             case EPIC:
-                taskFromString = new Epic(id, name, description, new HashSet<>(), taskStatus);
+                LocalDateTime endTime = null;
+                if (!line[7].equals("null")) {
+                    endTime = LocalDateTime.parse(line[7]);
+                }
+                taskFromString = new Epic(id, name, description, taskStatus, startTime, duration, endTime);
                 break;
             case TASK:
-                taskFromString = new Task(id, name, description, taskStatus);
+                taskFromString = new Task(id, name, description, taskStatus, startTime, duration);
                 break;
             case SUBTASK:
-                int epic = Integer.parseInt(line[5]);
-                taskFromString = new SubTask(id, name, description, taskStatus, epic);
+                int epic = Integer.parseInt(line[8]);
+                taskFromString = new SubTask(id, name, description, taskStatus, epic, startTime, duration);
+
                 break;
         }
 
