@@ -298,9 +298,6 @@ public class InMemoryTaskManager implements TaskManager {
     private void setEpicTimeValues(int id) {
         Epic epic = epics.get(id);
         Set<Integer> subTaskId = epic.getSubTaskId();
-        if (subTaskId.isEmpty()) {
-            return;
-        }
         LocalDateTime startTime = null;
         LocalDateTime endTime = null;
         long duration = 0;
