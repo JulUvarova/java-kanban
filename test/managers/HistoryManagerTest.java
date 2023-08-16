@@ -6,7 +6,6 @@ import tasks.Task;
 import tasks.TaskStatus;
 
 import java.util.List;
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,14 +20,11 @@ class HistoryManagerTest {
     void start() {
         historyManager = Managers.getDefaultHistoryManager();
         task1 = new Task(1, "Первая", "", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         task2 = new Task(2, "Вторая", "", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         task3 = new Task(3, "Третья", "", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 10, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 10, 1, 12, 0),60);
     }
 
     @Test

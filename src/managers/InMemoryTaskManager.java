@@ -3,7 +3,6 @@ package managers;
 import exceptions.TimeValidateException;
 import tasks.*;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -13,7 +12,7 @@ public class InMemoryTaskManager implements TaskManager {
     protected Map<Integer, Epic> epics = new HashMap<>();
     protected Map<Integer, SubTask> subTasks = new HashMap<>();
     protected HistoryManager historyManager;
-    Comparator comparator = Comparator.comparing(Task::getStartTime,
+    private Comparator<Task> comparator = Comparator.comparing(Task::getStartTime,
             Comparator.nullsLast(Comparator.naturalOrder())).thenComparing(Task::getId);
     protected Set<Task> prioritizedTasks = new TreeSet<>(comparator);
     protected int staticId = 0;
@@ -64,8 +63,9 @@ public class InMemoryTaskManager implements TaskManager {
         int taskId = task.getId();
         Task oldTask = tasks.get(taskId);
         if (oldTask != null) {
-            prioritizedTasks.remove(oldTask);
             timeValidate(task);
+            prioritizedTasks.remove(oldTask);
+            prioritizedTasks.add(task);
             tasks.put(taskId, task);
             return task;
         } else {
@@ -97,7 +97,7 @@ public class InMemoryTaskManager implements TaskManager {
             epic.clearSubtasksId();
             epic.setStatus(TaskStatus.NEW);
             epic.setStartTime(null);
-            epic.setDuration(null);
+            epic.setDuration(0);
             epic.setEndTime(null);
         }
         subTasks.clear();
@@ -134,8 +134,9 @@ public class InMemoryTaskManager implements TaskManager {
         int subTaskId = task.getId();
         SubTask oldTask = subTasks.get(subTaskId);
         if (oldTask != null) {
-            prioritizedTasks.remove(oldTask);
             timeValidate(task);
+            prioritizedTasks.remove(oldTask);
+            prioritizedTasks.add(task);
             subTasks.put(subTaskId, task);
             setEpicStatus(task.getEpicId());
             setEpicTimeValues(task.getEpicId());
@@ -267,11 +268,11 @@ public class InMemoryTaskManager implements TaskManager {
                 continue;
             }
             if (task.getStartTime().isAfter(taskPriority.getEndTime())
-                || task.getEndTime().isBefore(taskPriority.getStartTime())
-                || (task.getEndTime() == taskPriority.getStartTime())
-                || (task.getStartTime() == taskPriority.getEndTime())
+                    || task.getEndTime().isBefore(taskPriority.getStartTime())
+                    || (task.getEndTime() == taskPriority.getStartTime())
+                    || (task.getStartTime() == taskPriority.getEndTime())
             ) {
-                return;
+                continue;
             } else {
                 throw new TimeValidateException("Это время занято другой задачей!");
             }
@@ -300,23 +301,27 @@ public class InMemoryTaskManager implements TaskManager {
         if (subTaskId.isEmpty()) {
             return;
         }
-        LocalDateTime minStartTime = subTaskId.stream()
-                .map(sId -> subTasks.get(sId).getStartTime())
-                .filter(Objects::nonNull)
-                .min(LocalDateTime::compareTo).orElse(null);
-        epic.setStartTime(minStartTime);
-
-        LocalDateTime maxEndTime = subTaskId.stream()
-                .map(sId -> subTasks.get(sId).getEndTime())
-                .filter(Objects::nonNull)
-                .max(LocalDateTime::compareTo).orElse(null);
-        epic.setEndTime(maxEndTime);
-
-
-        Duration sumSubTasksDuration = subTaskId.stream()
-                .map(idSubTask -> subTasks.get(idSubTask).getDuration())
-                .filter(Objects::nonNull)
-                .reduce(Duration.ofMinutes(0), Duration::plus);
-        epic.setDuration(sumSubTasksDuration);
+        LocalDateTime startTime = null;
+        LocalDateTime endTime = null;
+        long duration = 0;
+        for (int subId : subTaskId) {
+            duration += subTasks.get(subId).getDuration();
+        }
+         for (int subId : subTaskId) {
+            SubTask subTask = subTasks.get(subId);
+            if (startTime == null) {
+                startTime = subTask.getStartTime();
+            } else if (subTask.getStartTime().isBefore(startTime)) {
+                startTime = subTask.getStartTime();
+            }
+            if (endTime == null) {
+                endTime = subTask.getEndTime();
+            } else if (subTask.getEndTime().isAfter(endTime)) {
+                endTime = subTask.getEndTime();
+            }
+        }
+        epic.setStartTime(startTime);
+        epic.setEndTime(endTime);
+        epic.setDuration(duration);
     }
 }

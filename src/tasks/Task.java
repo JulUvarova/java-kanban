@@ -9,11 +9,11 @@ public class Task {
     private String name;
     private String description;
     private TaskStatus status;
-    private Duration duration; // ПОДУМАТЬ НАД long - нет nullCheck
+    private long duration;
     private LocalDateTime startTime;
 
     public Task(String name, String description, TaskStatus status,
-                LocalDateTime startTime, Duration duration) { // for new task
+                LocalDateTime startTime, long duration) { // for new task
         this.name = name;
         this.description = description;
         this.status = status;
@@ -22,7 +22,7 @@ public class Task {
     }
 
     public Task(int id, String name, String description, TaskStatus status,
-                LocalDateTime startTime, Duration duration) { // for fileBacked
+                LocalDateTime startTime, long duration) { // for fileBacked
         this.id = id;
         this.name = name;
         this.description = description;
@@ -77,11 +77,11 @@ public class Task {
         return TaskType.TASK;
     }
 
-    public Duration getDuration() {
+    public long getDuration() {
         return duration;
     }
 
-    public void setDuration(Duration duration) {
+    public void setDuration(long duration) {
         this.duration = duration;
     }
 
@@ -97,7 +97,7 @@ public class Task {
         if (startTime == null) {
             return null;
         }
-        LocalDateTime endTime = startTime.plus(duration);
+        LocalDateTime endTime = startTime.plus(Duration.ofMinutes(duration));
         return endTime;
     }
 

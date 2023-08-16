@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import tasks.*;
 import tasks.TaskStatus;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,23 +25,17 @@ class EpicTest {
         manager = Managers.getDefaultTaskManager();
         epic1 = new Epic("ПервыйПолный", "");
         subTaskNew = new SubTask("Новая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         subTaskNew2 = new SubTask("Новая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 14, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 14, 19, 0), 120);
         subTaskInProgress = new SubTask("В процессе", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         subTaskInProgress2 = new SubTask("В процессе", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 9, 2, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 2, 12, 0), 60);
         subTaskDone = new SubTask("Завершенная", "описание", TaskStatus.DONE, 1,
-                LocalDateTime.of(2023, 7, 1, 1, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 7, 1, 1, 0), 60);
         subTaskDone2 = new SubTask("Завершенная", "описание", TaskStatus.DONE, 1,
-                LocalDateTime.of(2023, 7, 1, 3, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 7, 1, 3, 0), 60);
     }
 
     @Test
@@ -119,7 +112,7 @@ class EpicTest {
         Epic epic = manager.getEpicById(1);
         LocalDateTime startTime = epic.getStartTime();
         LocalDateTime endTime = epic.getEndTime();
-        Duration duration = epic.getDuration();
+        long duration = epic.getDuration();
 
         assertEquals(subTaskNew.getStartTime(), startTime, "Неверное время начала.");
         assertEquals(subTaskNew.getEndTime(), endTime, "Неверное время завершения.");
@@ -134,11 +127,12 @@ class EpicTest {
         Epic epic = manager.getEpicById(1);
         LocalDateTime startTime = epic.getStartTime();
         LocalDateTime endTime = epic.getEndTime();
-        Duration duration = epic.getDuration();
+        long duration = epic.getDuration();
 
         assertEquals(subTaskDone.getStartTime(), startTime, "Неверное время начала.");
         assertEquals(subTaskNew.getEndTime(), endTime, "Неверное время завершения.");
-        assertEquals(subTaskNew.getDuration().plus(subTaskDone.getDuration()), duration, "Неверная продолжительность.");
+        assertEquals(subTaskNew.getDuration() + subTaskDone.getDuration()
+                , duration, "Неверная продолжительность.");
     }
 
     @Test

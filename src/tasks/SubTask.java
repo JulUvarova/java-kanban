@@ -1,6 +1,5 @@
 package tasks;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -8,13 +7,13 @@ public class SubTask extends Task {
     private int epicId;
 
     public SubTask(String name, String description, TaskStatus status, int epicId,
-                   LocalDateTime startTime, Duration duration) { // for new subTask
+                   LocalDateTime startTime, long duration) { // for new subTask
         super(name, description, status, startTime, duration);
         this.epicId = epicId;
     }
 
     public SubTask(int id, String name, String description, TaskStatus status, int epicId,
-                   LocalDateTime startTime, Duration duration) { // for fileBacked
+                   LocalDateTime startTime, long duration) { // for fileBacked
         super(id, name, description, status, startTime, duration);
         this.epicId = epicId;
     }

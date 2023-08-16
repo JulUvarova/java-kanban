@@ -7,7 +7,6 @@ import tasks.TaskStatus;
 
 import java.util.List;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,8 +18,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void addTaskInEmptyMapAndGetTaskAllTask() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         manager.addTask(task1);
         final List<Task> tasks = manager.getAllTasks();
 
@@ -31,11 +29,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void addTaskWithStandardBehaviorAndGetAllTask() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         manager.addTask(task1);
         manager.addTask(task2);
         final List<Task> tasks = manager.getAllTasks();
@@ -47,11 +43,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void addTaskWithWrongStartTime() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         Task taskWrongTime = new Task("Ошибочная", "описание", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 8, 13, 19, 30),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 8, 13, 19, 30), 60);
         manager.addTask(task1);
         TimeValidateException exc = assertThrows(
                 TimeValidateException.class,
@@ -78,12 +72,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void updateTaskAndGetItById() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         final int taskId = manager.addTask(task1).getId();
         Task task1Upd = new Task(taskId, "Первая", "обновленная", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         final Task updateTask = manager.updateTask(task1Upd);
 
         assertNotNull(updateTask, "Задача не найдена.");
@@ -93,12 +85,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void updateWrongTask() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         manager.addTask(task1);
         Task task1Upd = new Task(2, "Первая", "обновленная", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         final Task updateTask = manager.updateTask(task1Upd);
 
         assertNull(updateTask, "Такой задачи не должно существовать.");
@@ -107,8 +97,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void getTaskByIdAsStandardBehavior() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         final int id = manager.addTask(task1).getId();
         final Task taskById = manager.getTaskById(id);
 
@@ -118,8 +107,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void getTaskByWrongId() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         manager.addTask(task1);
         final Task taskById = manager.getTaskById(2);
 
@@ -129,11 +117,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void deleteTaskByIdAndGetAllTasks() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         manager.addTask(task1);
         int id = manager.addTask(task2).getId();
         manager.deleteTaskById(id);
@@ -145,11 +131,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void deleteTaskByWrongId() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         manager.addTask(task1);
         manager.addTask(task2);
         manager.deleteTaskById(3);
@@ -170,11 +154,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void deleteAllTaskInNonEmptyMap() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         manager.addTask(task1);
         manager.addTask(task2);
         manager.clearAllTasks();
@@ -189,8 +171,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void addSubTaskInEmptyMapAndGetTaskAllTask() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         final List<SubTask> tasks = manager.getAllSubTasks();
@@ -203,11 +184,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void addSubTaskWithStandardBehaviorAndGetAllTask() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         SubTask subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         manager.addSubTask(subTask2e1);
@@ -221,11 +200,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void addSubTaskWithWrongStartTime() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         SubTask subTaskWrongTime = new SubTask("Ошибочная", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 30),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 8, 13, 19, 30), 60);
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         TimeValidateException exc = assertThrows(
@@ -254,13 +231,11 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void updateSubTaskAndGetItById() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         manager.addEpic(epic1);
         final int taskId = manager.addSubTask(subTask1e1).getId();
         SubTask task1Upd = new SubTask(taskId, "Первая", "обновленная", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         final SubTask updateTask = manager.updateSubTask(task1Upd);
 
         assertNotNull(updateTask, "Задача не найдена.");
@@ -271,13 +246,11 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void updateWrongSubTask() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         SubTask task1Upd = new SubTask(3, "Первая", "обновленная", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         final SubTask updateTask = manager.updateSubTask(task1Upd);
 
         assertNull(updateTask, "Такой задачи не должно существовать.");
@@ -287,8 +260,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void getSubTaskByIdAsStandardBehavior() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         manager.addEpic(epic1);
         final int id = manager.addSubTask(subTask1e1).getId();
         final SubTask taskById = manager.getSubTaskById(id);
@@ -300,8 +272,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void getSubTaskByWrongId() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         final SubTask taskById = manager.getSubTaskById(100);
@@ -313,11 +284,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void deleteSubTaskByIdAndGetAllTasks() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         SubTask subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         int id = manager.addSubTask(subTask2e1).getId();
@@ -331,11 +300,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void deleteSubTaskByWrongId() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         SubTask subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         manager.addSubTask(subTask2e1);
@@ -358,11 +325,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void deleteAllSubTaskInNonEmptyMap() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         SubTask subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         manager.addSubTask(subTask2e1);
@@ -502,11 +467,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void getHistoryInDifferentCase() {
         Epic epic1 = new Epic("ПервыйПолный", "");
         SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         SubTask subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         manager.addSubTask(subTask2e1);
@@ -526,11 +489,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void getPrioritizedTasksInDifferentCase() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         List<Task> prioritizedTasksIsEmpty = manager.getPrioritizedTasks();
 
         assertNotNull(prioritizedTasksIsEmpty, "История не возвращвется.");
@@ -553,15 +514,11 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void getPrioritizedTasksWithNullTasks() {
         Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
-        Task nullTimeTaskFirst = new Task("Без времени", "описание", TaskStatus.NEW,
-                null, null);
-        Task nullTimeTaskLast = new Task("Без времени", "описание", TaskStatus.NEW,
-                null, null);
+                LocalDateTime.of(2023, 9, 1, 12, 0), 60);
+        Task nullTimeTaskFirst = new Task("Без времени", "описание", TaskStatus.NEW, null, 0);
+        Task nullTimeTaskLast = new Task("Без времени", "описание", TaskStatus.NEW, null, 0);
         manager.addTask(task1);
         manager.addTask(task2);
         manager.addTask(nullTimeTaskFirst);

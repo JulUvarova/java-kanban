@@ -4,7 +4,6 @@ import exceptions.*;
 import tasks.*;
 
 import java.io.*;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -258,21 +257,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String name = line[2];
         TaskStatus taskStatus = TaskStatus.valueOf(line[3]);
         String description = line[4];
-        LocalDateTime startTime = null;
-        if (!line[5].equals("null")) {
-            startTime = LocalDateTime.parse(line[5]);
-        }
-        Duration duration = null;
-        if (!line[6].equals("null")) {
-           duration = Duration.parse(line[6]);
-        }
+        LocalDateTime startTime = parseToLocalDateTime(line[5]);
+        long duration = Long.parseLong(line[6]);
 
         switch (taskType) {
             case EPIC:
-                LocalDateTime endTime = null;
-                if (!line[7].equals("null")) {
-                    endTime = LocalDateTime.parse(line[7]);
-                }
+                LocalDateTime endTime = parseToLocalDateTime(line[7]);
                 taskFromString = new Epic(id, name, description, taskStatus, startTime, duration, endTime);
                 break;
             case TASK:
@@ -302,5 +292,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             historyFromString.add(Integer.valueOf(line[i]));
         }
         return historyFromString;
+    }
+
+    private static LocalDateTime parseToLocalDateTime(String date) {
+        if (!date.equals("null")) {
+            return LocalDateTime.parse(date);
+        }
+        return null;
     }
 }

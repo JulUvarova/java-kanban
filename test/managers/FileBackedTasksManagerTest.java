@@ -12,7 +12,6 @@ import tasks.TaskStatus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,8 +63,7 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
     @Test
     void saveAndLoadWithEmptyHistory() {
         Task task1 = new Task("Задача", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         manager.addTask(task1);
         loadManager = FileBackedTasksManager.loadFromFile("saveTestFile.csv", "backedTestFile.cvs");
 
@@ -86,12 +84,10 @@ class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager>
     @Test
     void saveAndLoadAsStandardBehavior() {
         Task task1 = new Task("Задача", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         Epic epic2 = new Epic("Эпик", "");
         SubTask subTask3e2 = new SubTask("Подзадача", "описание", TaskStatus.DONE, 2,
-                LocalDateTime.of(2023, 8, 14, 19, 0),
-                Duration.ofMinutes(120));
+                LocalDateTime.of(2023, 8, 14, 19, 0), 120);
         int taskId = manager.addTask(task1).getId();
         int epicId = manager.addEpic(epic2).getId();
         int subTaskId = manager.addSubTask(subTask3e2).getId();

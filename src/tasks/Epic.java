@@ -1,6 +1,5 @@
 package tasks;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -19,7 +18,7 @@ public class Epic extends Task {
     }
 
     public Epic(int id, String name, String description, TaskStatus status,
-                LocalDateTime startTime, Duration duration, LocalDateTime endTime) { // for fileBacked
+                LocalDateTime startTime, long duration, LocalDateTime endTime) { // for fileBacked
         super(id, name, description, status, startTime, duration);
         this.endTime = endTime;
     }
