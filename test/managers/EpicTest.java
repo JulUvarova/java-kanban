@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class EpicTest<T extends TaskManager> {
+class EpicTest {
     static TaskManager manager;
     static Epic epic1;
     static SubTask subTaskNew;

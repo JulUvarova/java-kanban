@@ -3,6 +3,7 @@ package tasks;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Epic extends Task {
@@ -11,11 +12,10 @@ public class Epic extends Task {
 
     public Epic(String name, String description) { // for new Epic
         super(name, description);
-        endTime = null;
     }
+
     public Epic(int id, String name, String description) { // for update Epic
         super(id, name, description);
-        endTime = null;
     }
 
     public Epic(int id, String name, String description, TaskStatus status,
@@ -52,6 +52,20 @@ public class Epic extends Task {
 
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Epic epic = (Epic) o;
+        return Objects.equals(endTime, epic.endTime) && Objects.equals(subTaskId, epic.subTaskId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), endTime, subTaskId);
     }
 
     @Override

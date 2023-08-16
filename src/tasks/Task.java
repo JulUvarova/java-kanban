@@ -5,12 +5,12 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
+    private int id;
     private String name;
     private String description;
     private TaskStatus status;
-    private int id;
-    private Duration duration;
-    LocalDateTime startTime;
+    private Duration duration; // ПОДУМАТЬ НАД long - нет nullCheck
+    private LocalDateTime startTime;
 
     public Task(String name, String description, TaskStatus status,
                 LocalDateTime startTime, Duration duration) { // for new task
@@ -35,8 +35,6 @@ public class Task {
         this.name = name;
         this.description = description;
         this.status = TaskStatus.NEW;
-        this.startTime = null;
-        this.duration = null;
     }
 
     public Task(int id, String name, String description) { // for new Epic
@@ -44,8 +42,6 @@ public class Task {
         this.name = name;
         this.description = description;
         this.status = TaskStatus.NEW;
-        this.startTime = null;
-        this.duration = null;
     }
 
     public void setId(int id) {
@@ -98,6 +94,9 @@ public class Task {
     }
 
     public LocalDateTime getEndTime() {
+        if (startTime == null) {
+            return null;
+        }
         LocalDateTime endTime = startTime.plus(duration);
         return endTime;
     }

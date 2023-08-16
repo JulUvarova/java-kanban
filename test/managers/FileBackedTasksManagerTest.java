@@ -17,34 +17,38 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FileBackedTasksManagerTest {
-    TaskManager saveManager;
+class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager> {
     TaskManager loadManager;
-    Task task1;
-    Epic epic2;
-    SubTask subTask3e2;
 
     @BeforeEach
     void getManager() {
-        saveManager = Managers.getDefaultFileBackedTaskManager("saveTestFile.csv");
+        manager = (FileBackedTasksManager) Managers.getDefaultFileBackedTaskManager("saveTestFile.csv");
         loadManager = Managers.getDefaultFileBackedTaskManager("backedTestFile.csv");
-        task1 = new Task("Задача", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
-        epic2 = new Epic("Эпик", "");
-        subTask3e2 = new SubTask("Подзадача", "описание", TaskStatus.DONE, 2,
-                LocalDateTime.of(2023, 8, 14, 19, 0),
-                Duration.ofMinutes(120));
     }
 
     @Test
     void saveAndLoadWithEmptyFile() {
-        int id = saveManager.addTask(task1).getId();
-        saveManager.deleteTaskById(id);
+        try {
+            Files.createFile(Path.of("saveTestFile.csv"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         loadManager = FileBackedTasksManager.loadFromFile("saveTestFile.csv", "backedTestFile.cvs");
 
-        assertTrue(saveManager.getAllTasks().isEmpty());
-        assertTrue(loadManager.getAllTasks().isEmpty());
+        assertTrue(manager.getAllTasks().isEmpty(), "Список с задачами не пустой.");
+        assertTrue(loadManager.getAllTasks().isEmpty(), "Список с задачами не пустой.");
+        assertEquals(manager.getAllTasks(), loadManager.getAllTasks(),
+                "Список задач после выгрузки не совпадает.");
+        assertEquals(manager.getAllSubTasks(), loadManager.getAllSubTasks(),
+                "Список подзадач после выгрузки не совпадает.");
+        assertEquals(manager.getAllEpics(), loadManager.getAllEpics(),
+                "Список эпиков после выгрузки не совпадает.");
+        assertEquals(manager.getHistory(), loadManager.getHistory(),
+                "История после выгрузки не совпадает.");
+        assertEquals(manager.getPrioritizedTasks(), loadManager.getPrioritizedTasks(),
+                "Упорядоченный список после выгрузки не совпадает.");
+        assertEquals(manager.getLastStaticId(), loadManager.getLastStaticId(),
+                "Счетчик задач после выгрузки не совпадает.");
     }
 
     @Test
@@ -59,38 +63,76 @@ class FileBackedTasksManagerTest {
 
     @Test
     void saveAndLoadWithEmptyHistory() {
-        saveManager.addTask(task1);
+        Task task1 = new Task("Задача", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        manager.addTask(task1);
         loadManager = FileBackedTasksManager.loadFromFile("saveTestFile.csv", "backedTestFile.cvs");
-        Task taskSave = saveManager.getAllTasks().get(0);
-        Task taskLoad = loadManager.getAllTasks().get(0);
 
-        assertEquals(taskSave, taskLoad, "Задачи не совпадают.");
+        assertEquals(manager.getAllTasks(), loadManager.getAllTasks(),
+                "Список задач после выгрузки не совпадает.");
+        assertEquals(manager.getAllSubTasks(), loadManager.getAllSubTasks(),
+                "Список подзадач после выгрузки не совпадает.");
+        assertEquals(manager.getAllEpics(), loadManager.getAllEpics(),
+                "Список эпиков после выгрузки не совпадает.");
+        assertEquals(manager.getHistory(), loadManager.getHistory(),
+                "История после выгрузки не совпадает.");
+        assertEquals(manager.getPrioritizedTasks(), loadManager.getPrioritizedTasks(),
+                "Упорядоченный список после выгрузки не совпадает.");
+        assertEquals(manager.getLastStaticId(), loadManager.getLastStaticId(),
+                "Счетчик задач после выгрузки не совпадает.");
     }
 
     @Test
     void saveAndLoadAsStandardBehavior() {
-        int taskId = saveManager.addTask(task1).getId();
-        int epicId = saveManager.addEpic(epic2).getId();
-        int subTaskId = saveManager.addSubTask(subTask3e2).getId();
-        saveManager.getTaskById(taskId);
-        saveManager.getEpicById(epicId);
-        saveManager.getSubTaskById(subTaskId);
+        Task task1 = new Task("Задача", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        Epic epic2 = new Epic("Эпик", "");
+        SubTask subTask3e2 = new SubTask("Подзадача", "описание", TaskStatus.DONE, 2,
+                LocalDateTime.of(2023, 8, 14, 19, 0),
+                Duration.ofMinutes(120));
+        int taskId = manager.addTask(task1).getId();
+        int epicId = manager.addEpic(epic2).getId();
+        int subTaskId = manager.addSubTask(subTask3e2).getId();
+        manager.getTaskById(taskId);
+        manager.getEpicById(epicId);
+        manager.getSubTaskById(subTaskId);
         loadManager = FileBackedTasksManager.loadFromFile("saveTestFile.csv", "backedTestFile.cvs");
 
-        assertEquals(saveManager.getAllTasks().get(0), loadManager.getAllTasks().get(0), "Задачи не совпадают.");
-        assertEquals(saveManager.getAllEpics().get(0), loadManager.getAllEpics().get(0), "Эпики не совпадают.");
-        assertEquals(saveManager.getAllSubTasks().get(0), loadManager.getAllSubTasks().get(0),
-                "Подзадачи не совпадают.");
-        assertEquals(saveManager.getHistory(), loadManager.getHistory(), "Истории не совпадают.");
+        assertEquals(manager.getAllTasks(), loadManager.getAllTasks(),
+                "Список задач после выгрузки не совпадает.");
+        assertEquals(manager.getAllSubTasks(), loadManager.getAllSubTasks(),
+                "Список подзадач после выгрузки не совпадает.");
+        assertEquals(manager.getAllEpics(), loadManager.getAllEpics(),
+                "Список эпиков после выгрузки не совпадает.");
+        assertEquals(manager.getHistory(), loadManager.getHistory(),
+                "История после выгрузки не совпадает.");
+        assertEquals(manager.getPrioritizedTasks(), loadManager.getPrioritizedTasks(),
+                "Упорядоченный список после выгрузки не совпадает.");
+        assertEquals(manager.getLastStaticId(), loadManager.getLastStaticId(),
+                "Счетчик задач после выгрузки не совпадает.");
     }
 
     @Test
     void saveAndLoadWithNoSubtaskEpic() {
-        int epicId = saveManager.addEpic(epic2).getId();
-        saveManager.getEpicById(epicId);
+        Epic epic2 = new Epic("Эпик", "");
+        int epicId = manager.addEpic(epic2).getId();
+        manager.getEpicById(epicId);
         loadManager = FileBackedTasksManager.loadFromFile("saveTestFile.csv", "backedTestFile.cvs");
 
-        assertEquals(saveManager.getAllEpics().get(0), loadManager.getAllEpics().get(0), "Эпики не совпадают.");
+        assertEquals(manager.getAllTasks(), loadManager.getAllTasks(),
+                "Список задач после выгрузки не совпадает.");
+        assertEquals(manager.getAllSubTasks(), loadManager.getAllSubTasks(),
+                "Список подзадач после выгрузки не совпадает.");
+        assertEquals(manager.getAllEpics(), loadManager.getAllEpics(),
+                "Список эпиков после выгрузки не совпадает.");
+        assertEquals(manager.getHistory(), loadManager.getHistory(),
+                "История после выгрузки не совпадает.");
+        assertEquals(manager.getPrioritizedTasks(), loadManager.getPrioritizedTasks(),
+                "Упорядоченный список после выгрузки не совпадает.");
+        assertEquals(manager.getLastStaticId(), loadManager.getLastStaticId(),
+                "Счетчик задач после выгрузки не совпадает.");
     }
 
     @AfterEach

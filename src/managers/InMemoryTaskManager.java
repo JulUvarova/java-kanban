@@ -6,7 +6,6 @@ import tasks.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class InMemoryTaskManager implements TaskManager {
 
@@ -14,7 +13,9 @@ public class InMemoryTaskManager implements TaskManager {
     protected Map<Integer, Epic> epics = new HashMap<>();
     protected Map<Integer, SubTask> subTasks = new HashMap<>();
     protected HistoryManager historyManager;
-    protected Set<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime));
+    Comparator comparator = Comparator.comparing(Task::getStartTime,
+            Comparator.nullsLast(Comparator.naturalOrder())).thenComparing(Task::getId);
+    protected Set<Task> prioritizedTasks = new TreeSet<>(comparator);
     protected int staticId = 0;
 
     public InMemoryTaskManager() {
@@ -61,12 +62,15 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task updateTask(Task task) {
         int taskId = task.getId();
-        if (tasks.containsKey(taskId)) {
+        Task oldTask = tasks.get(taskId);
+        if (oldTask != null) {
+            prioritizedTasks.remove(oldTask);
+            timeValidate(task);
             tasks.put(taskId, task);
+            return task;
         } else {
             return null;
         }
-        return task;
     }
 
     @Override
@@ -128,7 +132,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public SubTask updateSubTask(SubTask task) {
         int subTaskId = task.getId();
-        if (subTasks.containsKey(subTaskId)) {
+        SubTask oldTask = subTasks.get(subTaskId);
+        if (oldTask != null) {
+            prioritizedTasks.remove(oldTask);
+            timeValidate(task);
             subTasks.put(subTaskId, task);
             setEpicStatus(task.getEpicId());
             setEpicTimeValues(task.getEpicId());
@@ -140,9 +147,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteSubTaskById(int id) {
-        if (subTasks.containsKey(id)) {
-            prioritizedTasks.remove(subTasks.get(id));
-            int epicId = subTasks.remove(id).getEpicId();
+        SubTask subTask = subTasks.remove(id);
+        if (subTask != null) {
+            prioritizedTasks.remove(subTask);
+            int epicId = subTask.getEpicId();
             epics.get(epicId).deleteSubTaskId(id);
             setEpicStatus(epicId);
             setEpicTimeValues(epicId);
@@ -194,9 +202,7 @@ public class InMemoryTaskManager implements TaskManager {
         int epicId = task.getId();
         if (epics.containsKey(epicId)) {
             setEpicStatus(epicId);
-            if (task.getStartTime() != null) {
-                setEpicTimeValues(epicId);
-            }
+            setEpicTimeValues(epicId);
             epics.put(epicId, task);
         } else {
             return null;
@@ -242,20 +248,33 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(prioritizedTasks);
     }
 
+    @Override
+    public int getLastStaticId() {
+        return staticId;
+    }
+
     private int getStaticId() {
         staticId++;
         return staticId;
     }
 
     private void timeValidate(Task task) {
-        LocalDateTime start = task.getStartTime();
-        LocalDateTime end = task.getEndTime();
-
-        boolean isFree = prioritizedTasks.stream()
-                .allMatch(t -> start.isAfter(t.getEndTime())
-                        || end.isBefore(t.getStartTime()));
-        if (!isFree) {
-            throw new TimeValidateException("Это время занято другой задачей!");
+        for (Task taskPriority : prioritizedTasks) {
+            if (task.getStartTime() == null || taskPriority.getStartTime() == null) {
+                return;
+            }
+            if (task.getId() == taskPriority.getId()) {
+                continue;
+            }
+            if (task.getStartTime().isAfter(taskPriority.getEndTime())
+                || task.getEndTime().isBefore(taskPriority.getStartTime())
+                || (task.getEndTime() == taskPriority.getStartTime())
+                || (task.getStartTime() == taskPriority.getEndTime())
+            ) {
+                return;
+            } else {
+                throw new TimeValidateException("Это время занято другой задачей!");
+            }
         }
     }
 
@@ -278,25 +297,25 @@ public class InMemoryTaskManager implements TaskManager {
     private void setEpicTimeValues(int id) {
         Epic epic = epics.get(id);
         Set<Integer> subTaskId = epic.getSubTaskId();
-
-        List<LocalDateTime> startTimeList = subTaskId.stream()
-                .filter(sId -> subTasks.get(sId).getStartTime() != null)
+        if (subTaskId.isEmpty()) {
+            return;
+        }
+        LocalDateTime minStartTime = subTaskId.stream()
                 .map(sId -> subTasks.get(sId).getStartTime())
-                .sorted()
-                .collect(Collectors.toList());
-        epic.setStartTime(startTimeList.get(0));
+                .filter(Objects::nonNull)
+                .min(LocalDateTime::compareTo).orElse(null);
+        epic.setStartTime(minStartTime);
 
-        List<LocalDateTime> endTimeList = subTaskId.stream()
-                .filter(sId -> subTasks.get(sId).getEndTime() != null)
+        LocalDateTime maxEndTime = subTaskId.stream()
                 .map(sId -> subTasks.get(sId).getEndTime())
-                .sorted()
-                .collect(Collectors.toList());
-        epic.setEndTime(endTimeList.get(endTimeList.size() - 1));
+                .filter(Objects::nonNull)
+                .max(LocalDateTime::compareTo).orElse(null);
+        epic.setEndTime(maxEndTime);
 
 
         Duration sumSubTasksDuration = subTaskId.stream()
-                .filter(idSubTask -> subTasks.get(idSubTask).getDuration() != null)
                 .map(idSubTask -> subTasks.get(idSubTask).getDuration())
+                .filter(Objects::nonNull)
                 .reduce(Duration.ofMinutes(0), Duration::plus);
         epic.setDuration(sumSubTasksDuration);
     }

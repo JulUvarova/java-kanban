@@ -1,7 +1,6 @@
 package managers;
 
 import exceptions.TimeValidateException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tasks.*;
 import tasks.TaskStatus;
@@ -13,51 +12,15 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TaskManagerTest<T extends TaskManager> {
-    static TaskManager manager;
-    static Task task1;
-    static Task task2;
-    static Task taskWrongTime;
-    static Task nullTask;
-    static Epic epic1;
-    static Epic epic2NoSubTask;
-    static Epic nullEpic;
-    static SubTask subTask1e1;
-    static SubTask subTask2e1;
-    static SubTask subTaskWrongTime;
-    static SubTask nullSubTask;
-
-    @BeforeEach
-    void getManager() {
-        manager = Managers.getDefaultTaskManager();
-        task1 = new Task("Первая", "описание", TaskStatus.NEW,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
-        task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
-        taskWrongTime = new Task("Ошибочная", "описание", TaskStatus.IN_PROGRESS,
-                LocalDateTime.of(2023, 8, 13, 19, 30),
-                Duration.ofMinutes(60));
-        nullTask = null;
-        epic1 = new Epic("ПервыйПолный", "");
-        epic2NoSubTask = new Epic("ВторойБезПодзадач", "");
-        nullEpic = null;
-        subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 0),
-                Duration.ofMinutes(120));
-        subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 9, 1, 12, 0),
-                Duration.ofMinutes(60));
-        subTaskWrongTime = new SubTask("Ошибочная", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 8, 13, 19, 30),
-                Duration.ofMinutes(60));
-        nullSubTask = null;
-    }
+abstract class TaskManagerTest<T extends TaskManager> {
+    T manager;
 
     // for task
     @Test
     void addTaskInEmptyMapAndGetTaskAllTask() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
         manager.addTask(task1);
         final List<Task> tasks = manager.getAllTasks();
 
@@ -67,6 +30,12 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void addTaskWithStandardBehaviorAndGetAllTask() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
         manager.addTask(task1);
         manager.addTask(task2);
         final List<Task> tasks = manager.getAllTasks();
@@ -77,6 +46,12 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void addTaskWithWrongStartTime() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        Task taskWrongTime = new Task("Ошибочная", "описание", TaskStatus.IN_PROGRESS,
+                LocalDateTime.of(2023, 8, 13, 19, 30),
+                Duration.ofMinutes(60));
         manager.addTask(task1);
         TimeValidateException exc = assertThrows(
                 TimeValidateException.class,
@@ -87,7 +62,7 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void addNullTask() {
-        manager.addTask(nullTask);
+        manager.addTask(null);
         final List<Task> tasks = manager.getAllTasks();
 
         assertEquals(0, tasks.size(), "Неверное количество задач.");
@@ -102,6 +77,9 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void updateTaskAndGetItById() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
         final int taskId = manager.addTask(task1).getId();
         Task task1Upd = new Task(taskId, "Первая", "обновленная", TaskStatus.NEW,
                 LocalDateTime.of(2023, 8, 13, 19, 0),
@@ -114,6 +92,9 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void updateWrongTask() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
         manager.addTask(task1);
         Task task1Upd = new Task(2, "Первая", "обновленная", TaskStatus.NEW,
                 LocalDateTime.of(2023, 8, 13, 19, 0),
@@ -125,6 +106,9 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void getTaskByIdAsStandardBehavior() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
         final int id = manager.addTask(task1).getId();
         final Task taskById = manager.getTaskById(id);
 
@@ -133,6 +117,9 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void getTaskByWrongId() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
         manager.addTask(task1);
         final Task taskById = manager.getTaskById(2);
 
@@ -141,6 +128,12 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void deleteTaskByIdAndGetAllTasks() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
         manager.addTask(task1);
         int id = manager.addTask(task2).getId();
         manager.deleteTaskById(id);
@@ -151,6 +144,12 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void deleteTaskByWrongId() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
         manager.addTask(task1);
         manager.addTask(task2);
         manager.deleteTaskById(3);
@@ -170,6 +169,12 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void deleteAllTaskInNonEmptyMap() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
         manager.addTask(task1);
         manager.addTask(task2);
         manager.clearAllTasks();
@@ -182,6 +187,10 @@ class TaskManagerTest<T extends TaskManager> {
     // for subTask
     @Test
     void addSubTaskInEmptyMapAndGetTaskAllTask() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         final List<SubTask> tasks = manager.getAllSubTasks();
@@ -192,6 +201,13 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void addSubTaskWithStandardBehaviorAndGetAllTask() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        SubTask subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         manager.addSubTask(subTask2e1);
@@ -203,6 +219,13 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void addSubTaskWithWrongStartTime() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        SubTask subTaskWrongTime = new SubTask("Ошибочная", "описание", TaskStatus.IN_PROGRESS, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 30),
+                Duration.ofMinutes(60));
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         TimeValidateException exc = assertThrows(
@@ -214,7 +237,7 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void addNullSubTask() {
-        manager.addSubTask(nullSubTask);
+        manager.addSubTask(null);
         final List<SubTask> tasks = manager.getAllSubTasks();
 
         assertEquals(0, tasks.size(), "Неверное количество задач.");
@@ -229,6 +252,10 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void updateSubTaskAndGetItById() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
         manager.addEpic(epic1);
         final int taskId = manager.addSubTask(subTask1e1).getId();
         SubTask task1Upd = new SubTask(taskId, "Первая", "обновленная", TaskStatus.NEW, 1,
@@ -242,6 +269,10 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void updateWrongSubTask() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         SubTask task1Upd = new SubTask(3, "Первая", "обновленная", TaskStatus.NEW, 1,
@@ -254,6 +285,10 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void getSubTaskByIdAsStandardBehavior() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
         manager.addEpic(epic1);
         final int id = manager.addSubTask(subTask1e1).getId();
         final SubTask taskById = manager.getSubTaskById(id);
@@ -263,6 +298,10 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void getSubTaskByWrongId() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         final SubTask taskById = manager.getSubTaskById(100);
@@ -272,6 +311,13 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void deleteSubTaskByIdAndGetAllTasks() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        SubTask subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         int id = manager.addSubTask(subTask2e1).getId();
@@ -283,6 +329,13 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void deleteSubTaskByWrongId() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        SubTask subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         manager.addSubTask(subTask2e1);
@@ -303,6 +356,13 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void deleteAllSubTaskInNonEmptyMap() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        SubTask subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         manager.addSubTask(subTask2e1);
@@ -316,6 +376,7 @@ class TaskManagerTest<T extends TaskManager> {
     //for epic
     @Test
     void addEpicInEmptyMapAndGetTaskAllEpics() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
         manager.addEpic(epic1);
         final List<Epic> tasks = manager.getAllEpics();
 
@@ -325,6 +386,8 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void addEpicWithStandardBehaviorAndGetAllEpics() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        Epic epic2NoSubTask = new Epic("ВторойБезПодзадач", "");
         manager.addEpic(epic1);
         manager.addEpic(epic2NoSubTask);
         final List<Epic> tasks = manager.getAllEpics();
@@ -335,7 +398,7 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void addNullEpic() {
-        manager.addEpic(nullEpic);
+        manager.addEpic(null);
         final List<Epic> tasks = manager.getAllEpics();
 
         assertEquals(0, tasks.size(), "Неверное количество задач.");
@@ -350,6 +413,7 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void updateEpicAndGetItById() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
         final int taskId = manager.addEpic(epic1).getId();
         Epic epic1Upd = new Epic(taskId, "Первая", "обновленная");
         final Epic updateTask = manager.updateEpic(epic1Upd);
@@ -360,6 +424,7 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void updateWrongEpic() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
         manager.addEpic(epic1);
         Epic epic1Upd = new Epic(2, "Первая", "обновленная");
         final Epic updateTask = manager.updateEpic(epic1Upd);
@@ -369,6 +434,7 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void getEpicByIdAsStandardBehavior() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
         final int id = manager.addEpic(epic1).getId();
         final Epic taskById = manager.getEpicById(id);
 
@@ -377,6 +443,7 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void getEpicByWrongId() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
         manager.addEpic(epic1);
         final Epic taskById = manager.getEpicById(3);
 
@@ -385,6 +452,9 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void deleteEpicByIdAndGetAllEpics() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        Epic epic2NoSubTask = new Epic("ВторойБезПодзадач", "");
+
         manager.addEpic(epic1);
         int id = manager.addEpic(epic2NoSubTask).getId();
         manager.deleteEpicById(id);
@@ -395,6 +465,8 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void deleteEpicByWrongId() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        Epic epic2NoSubTask = new Epic("ВторойБезПодзадач", "");
         manager.addEpic(epic1);
         manager.addEpic(epic2NoSubTask);
         manager.deleteEpicById(3);
@@ -414,6 +486,8 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void deleteAllEpicsInNonEmptyMap() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        Epic epic2NoSubTask = new Epic("ВторойБезПодзадач", "");
         manager.addEpic(epic1);
         manager.addEpic(epic2NoSubTask);
         manager.clearAllEpics();
@@ -426,6 +500,13 @@ class TaskManagerTest<T extends TaskManager> {
     // for other
     @Test
     void getHistoryInDifferentCase() {
+        Epic epic1 = new Epic("ПервыйПолный", "");
+        SubTask subTask1e1 = new SubTask("Первая", "описание", TaskStatus.NEW, 1,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        SubTask subTask2e1 = new SubTask("Вторая", "описание", TaskStatus.IN_PROGRESS, 1,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
         manager.addEpic(epic1);
         manager.addSubTask(subTask1e1);
         manager.addSubTask(subTask2e1);
@@ -444,6 +525,12 @@ class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void getPrioritizedTasksInDifferentCase() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
         List<Task> prioritizedTasksIsEmpty = manager.getPrioritizedTasks();
 
         assertNotNull(prioritizedTasksIsEmpty, "История не возвращвется.");
@@ -461,5 +548,29 @@ class TaskManagerTest<T extends TaskManager> {
 
         assertNotNull(prioritizedTasksAfterDeleteTask, "История не возвращвется.");
         assertEquals(1, prioritizedTasksAfterDeleteTask.size(), "Неверное количество задач.");
+    }
+
+    @Test
+    void getPrioritizedTasksWithNullTasks() {
+        Task task1 = new Task("Первая", "описание", TaskStatus.NEW,
+                LocalDateTime.of(2023, 8, 13, 19, 0),
+                Duration.ofMinutes(120));
+        Task task2 = new Task("Вторая", "описание", TaskStatus.IN_PROGRESS,
+                LocalDateTime.of(2023, 9, 1, 12, 0),
+                Duration.ofMinutes(60));
+        Task nullTimeTaskFirst = new Task("Без времени", "описание", TaskStatus.NEW,
+                null, null);
+        Task nullTimeTaskLast = new Task("Без времени", "описание", TaskStatus.NEW,
+                null, null);
+        manager.addTask(task1);
+        manager.addTask(task2);
+        manager.addTask(nullTimeTaskFirst);
+        manager.addTask(nullTimeTaskLast);
+        List<Task> prioritizedTasks = manager.getPrioritizedTasks();
+
+        assertNotNull(prioritizedTasks, "История не возвращвется.");
+        assertEquals(nullTimeTaskLast, prioritizedTasks.get(3), "Неверное количество задач.");
+
+
     }
 }

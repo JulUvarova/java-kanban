@@ -56,6 +56,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     switch (task.getTaskType()) {
                         case TASK:
                             loadBTM.tasks.put(task.getId(), task);
+                            loadBTM.prioritizedTasks.add(task);
                             continue;
                         case EPIC:
                             loadBTM.epics.put(task.getId(), (Epic) task);
@@ -63,6 +64,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                         case SUBTASK:
                             SubTask subtask = (SubTask) task;
                             loadBTM.subTasks.put(id, subtask);
+                            loadBTM.prioritizedTasks.add(task);
                             Epic epic = loadBTM.epics.get(subtask.getEpicId());
                             epic.addSubTaskId(id);
                     }
