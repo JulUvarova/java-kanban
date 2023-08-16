@@ -31,7 +31,7 @@ class EpicTest {
         subTaskInProgress = new SubTask("В процессе", "описание", TaskStatus.IN_PROGRESS, 1,
                 LocalDateTime.of(2023, 9, 1, 12, 0), 60);
         subTaskInProgress2 = new SubTask("В процессе", "описание", TaskStatus.IN_PROGRESS, 1,
-                LocalDateTime.of(2023, 9, 2, 12, 0), 60);
+                null, 0);
         subTaskDone = new SubTask("Завершенная", "описание", TaskStatus.DONE, 1,
                 LocalDateTime.of(2023, 7, 1, 1, 0), 60);
         subTaskDone2 = new SubTask("Завершенная", "описание", TaskStatus.DONE, 1,

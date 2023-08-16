@@ -269,8 +269,8 @@ public class InMemoryTaskManager implements TaskManager {
             }
             if (task.getStartTime().isAfter(taskPriority.getEndTime())
                     || task.getEndTime().isBefore(taskPriority.getStartTime())
-                    || (task.getEndTime() == taskPriority.getStartTime())
-                    || (task.getStartTime() == taskPriority.getEndTime())
+                    || task.getEndTime().equals(taskPriority.getStartTime())
+                    || task.getStartTime().equals(taskPriority.getEndTime())
             ) {
                 continue;
             } else {
@@ -305,19 +305,15 @@ public class InMemoryTaskManager implements TaskManager {
         LocalDateTime endTime = null;
         long duration = 0;
         for (int subId : subTaskId) {
-            duration += subTasks.get(subId).getDuration();
-        }
-         for (int subId : subTaskId) {
             SubTask subTask = subTasks.get(subId);
-            if (startTime == null) {
-                startTime = subTask.getStartTime();
-            } else if (subTask.getStartTime().isBefore(startTime)) {
-                startTime = subTask.getStartTime();
-            }
-            if (endTime == null) {
-                endTime = subTask.getEndTime();
-            } else if (subTask.getEndTime().isAfter(endTime)) {
-                endTime = subTask.getEndTime();
+            duration += subTasks.get(subId).getDuration();
+            if (subTask.getStartTime() != null) {
+                if (startTime == null || subTask.getStartTime().isBefore(startTime)) {
+                    startTime = subTask.getStartTime();
+                }
+                if (endTime == null || subTask.getEndTime().isAfter(endTime)) {
+                    endTime = subTask.getEndTime();
+                }
             }
         }
         epic.setStartTime(startTime);

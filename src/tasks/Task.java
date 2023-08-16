@@ -97,8 +97,7 @@ public class Task {
         if (startTime == null) {
             return null;
         }
-        LocalDateTime endTime = startTime.plus(Duration.ofMinutes(duration));
-        return endTime;
+        return startTime.plus(Duration.ofMinutes(duration));
     }
 
     @Override
