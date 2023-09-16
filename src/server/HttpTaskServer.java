@@ -2,15 +2,13 @@ package server;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import exceptions.TimeValidateException;
 import managers.Managers;
-import managers.TaskManager;
+import managers.taskManagers.TaskManager;
 import tasks.*;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -18,35 +16,34 @@ import java.util.List;
 import java.util.Optional;
 
 public class HttpTaskServer {
-    private static final TaskManager manager = Managers.getDefaultFileBackedTaskManager("save_8");
     private static final int PORT = 8080;
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-    private static final Gson gson = new Gson();
+    private final TaskManager manager;
+    private final Gson gson = Managers.getGson();
+    private final HttpServer server;
 
-    public HttpTaskServer() throws IOException {
-//        Task task1 = new Task("Задача", "описание", TaskStatus.NEW,
-//                LocalDateTime.of(2023, 8, 13, 19, 0), 120);
-//        Epic epic1 = new Epic("ПервыйПолный", "");
-//        SubTask subTaskNew = new SubTask("Новая", "описание", TaskStatus.NEW, 2,
-//                LocalDateTime.of(2023, 9, 13, 19, 0), 120);
-//        manager.addTask(task1);
-//        manager.addEpic(epic1);
-//        manager.addSubTask(subTaskNew);
-
-        HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
-        server.createContext("/tasks", new TaskHandler());
-
-        server.start();
-        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+    public HttpTaskServer(TaskManager manager) throws IOException {
+        this.manager = manager;
+        server = HttpServer.create(new InetSocketAddress("localhost", PORT), 0);
+        server.createContext("/tasks", this::handleTask);
     }
 
-    private class TaskHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
+    public void start() {
+        System.out.println("Запускаем HttpTaskServer на порту " + PORT);
+        System.out.println("http://localhost:" + PORT + "/tasks");
+        server.start();
+    }
+
+    public void stop() {
+        server.stop(0);
+        System.out.println("Остановили сервер на порту " + PORT);
+    }
+
+    public void handleTask(HttpExchange exchange) {
+        try {
             String method = exchange.getRequestMethod();
-            String requestPath[] = (exchange.getRequestURI().getPath().split("/"));
+            String[] requestPath = (exchange.getRequestURI().getPath().split("/"));
             Optional<String> requestQuery = Optional.ofNullable(exchange.getRequestURI().getQuery());
-            String body = new String(exchange.getRequestBody().readAllBytes(), DEFAULT_CHARSET);
 
             Endpoint endpoint = getEndpoint(method, requestPath, requestQuery);
 
@@ -54,175 +51,216 @@ public class HttpTaskServer {
                 case GetTasks:
                     List<Task> tasks = manager.getAllTasks();
                     if (tasks.size() == 0) {
-                        writeResponse(exchange, "Задач пока не существует", 404);
+                        System.out.println("Список задач пуст");
+                        exchange.sendResponseHeaders(404, 0);
                     } else {
-                        writeResponse(exchange, gson.toJson(tasks), 200);
+                        System.out.println("Получен список задач");
+                        sendText(exchange, gson.toJson(tasks));
                     }
                     break;
                 case GetTaskById:
                     Task task = manager.getTaskById(getId(requestQuery.get()));
-                    if (task == null) {
-                        writeResponse(exchange, "Задачи с " + requestQuery.get() + " не существует", 404);
+                    if (task != null) {
+                        System.out.println("Получена задача с id: " + task.getId());
+                        sendText(exchange, gson.toJson(task));
                     } else {
-                        writeResponse(exchange, gson.toJson(task), 200);
+                        System.out.println("Некорректный id для задачи: " + requestQuery.get());
+                        exchange.sendResponseHeaders(404, 0);
                     }
                     break;
                 case PostTask:
-                    Task taskToPost = gson.fromJson(body, Task.class);
-                    List<Task> tasksInMemory = manager.getAllTasks();
-                    for (Task t : tasksInMemory) {
-                        if (t.getId() == taskToPost.getId()) {
-                            try {
-                                manager.updateTask(taskToPost);
-                                writeResponse(exchange, "Задачa с id:" + taskToPost.getId() + " обновлена", 200);
-                            } catch (TimeValidateException e) {
-                                writeResponse(exchange, "Это время занято другой задачей", 400);
-                            }
-                            return;
+                    Task taskToPost = gson.fromJson(readText(exchange), Task.class);
+                    Task oldTask = manager.getTaskById(taskToPost.getId());
+                    if (oldTask != null) {
+                        try {
+                            manager.updateTask(taskToPost);
+                            System.out.println("Задача с id: " + taskToPost.getId() + " обновлена");
+                            exchange.sendResponseHeaders(200, 0);
+                        } catch (TimeValidateException e) {
+                            System.out.println("Задача пересеклась по времени");
+                            exchange.sendResponseHeaders(405, 0);
                         }
-                    }
-                    try {
-                        manager.addTask(taskToPost);
-                        writeResponse(exchange, "Задачa добавлена", 200);
-                    } catch (TimeValidateException e) {
-                        writeResponse(exchange, "Это время занято другой задачей", 400);
+                        return;
+                    } else {
+                        try {
+                            manager.addTask(taskToPost);
+                            System.out.println("Задачa добавлена");
+                            exchange.sendResponseHeaders(200, 0);
+                        } catch (TimeValidateException e) {
+                            System.out.println("Это время занято другой задачей");
+                            exchange.sendResponseHeaders(405, 0);
+                        }
                     }
                     break;
                 case DeleteTasks:
                     manager.clearAllTasks();
-                    writeResponse(exchange, "Все задачи удалены", 200);
+                    System.out.println("Все задачи удалены");
+                    exchange.sendResponseHeaders(200, 0);
                     break;
                 case DeleteTaskById:
-                    Task taskToDelete = manager.getTaskById(getId(requestQuery.get()));
-                    if (taskToDelete == null) {
-                        writeResponse(exchange, "Задачи с " + requestQuery.get() + " не существует", 404);
+                    Task taskToDel = manager.getTaskById(getId(requestQuery.get()));
+                    if (taskToDel != null) {
+                        manager.deleteTaskById(taskToDel.getId());
+                        System.out.println("Удалена задача с id: " + taskToDel.getId());
+                        exchange.sendResponseHeaders(200, 0);
                     } else {
-                        manager.deleteTaskById(getId(requestQuery.get()));
-                        writeResponse(exchange, "Задача с " + requestQuery.get() + " удалена", 200);
+                        System.out.println("Некорректный id для задачи: " + requestQuery.get());
+                        exchange.sendResponseHeaders(404, 0);
                     }
                     break;
                 case GetSubTasks:
                     List<SubTask> subtasks = manager.getAllSubTasks();
                     if (subtasks.size() == 0) {
-                        writeResponse(exchange, "Подзадач пока не существует", 404);
+                        System.out.println("Список подзадач пуст");
+                        exchange.sendResponseHeaders(404, 0);
                     } else {
-                        writeResponse(exchange, gson.toJson(subtasks), 200);
+                        System.out.println("Получен список подзадач");
+                        sendText(exchange, gson.toJson(subtasks));
                     }
                     break;
                 case GetSubTaskById:
-                    SubTask subtask = manager.getSubTaskById(getId(requestQuery.get()));
-                    if (subtask == null) {
-                        writeResponse(exchange, "Подзадачи с " + requestQuery.get() + " не существует", 404);
+                    SubTask sub = manager.getSubTaskById(getId(requestQuery.get()));
+                    if (sub != null) {
+                        System.out.println("Получена подзадача с id: " + sub.getId());
+                        sendText(exchange, gson.toJson(sub));
                     } else {
-                        writeResponse(exchange, gson.toJson(subtask), 200);
+                        System.out.println("Некорректный id для подзадачи: " + requestQuery.get());
+                        exchange.sendResponseHeaders(404, 0);
                     }
                     break;
                 case PostSubTask:
-                    SubTask subtaskToPost = gson.fromJson(body, SubTask.class);
-                    List<SubTask> subtasksInMemory = manager.getAllSubTasks();
-                    for (SubTask t : subtasksInMemory) {
-                        if (t.getId() == subtaskToPost.getId()) {
-                            try {
-                                manager.updateSubTask(subtaskToPost);
-                                writeResponse(exchange, "Подзадачa с id:" + subtaskToPost.getId() + " обновлена", 200);
-                            } catch (TimeValidateException e) {
-                                writeResponse(exchange, "Это время занято другой задачей", 400);
-                            }
-                            return;
+                    SubTask subToPost = gson.fromJson(readText(exchange), SubTask.class);
+                    SubTask oldSub = manager.getSubTaskById(subToPost.getId());
+                    if (oldSub != null) {
+                        try {
+                            manager.updateSubTask(subToPost);
+                            System.out.println("Подзадача с id: " + subToPost.getId() + " обновлена");
+                            exchange.sendResponseHeaders(200, 0);
+                        } catch (TimeValidateException e) {
+                            System.out.println("Подзадача пересеклась по времени");
+                            exchange.sendResponseHeaders(405, 0);
                         }
-                    }
-                    try {
-                        manager.addSubTask(subtaskToPost);
-                        writeResponse(exchange, "Подзадачa добавлена", 200);
-                    } catch (TimeValidateException e) {
-                        writeResponse(exchange, "Это время занято другой задачей", 400);
+                        return;
+                    } else {
+                        try {
+                            manager.addSubTask(subToPost);
+                            System.out.println("Подзадачa добавлена");
+                            exchange.sendResponseHeaders(200, 0);
+                        } catch (TimeValidateException e) {
+                            System.out.println("Это время занято другой задачей");
+                            exchange.sendResponseHeaders(405, 0);
+                        }
                     }
                     break;
                 case DeleteSubTasks:
                     manager.clearAllSubTasks();
-                    writeResponse(exchange, "Все подзадачи удалены", 200);
+                    System.out.println("Все подзадачи удалены");
+                    exchange.sendResponseHeaders(200, 0);
                     break;
                 case DeleteSubTaskById:
-                    SubTask subtaskToDelete = manager.getSubTaskById(getId(requestQuery.get()));
-                    if (subtaskToDelete == null) {
-                        writeResponse(exchange, "Подзадачи с " + requestQuery.get() + " не существует", 404);
+                    SubTask subToDel = manager.getSubTaskById(getId(requestQuery.get()));
+                    if (subToDel != null) {
+                        manager.deleteSubTaskById(subToDel.getId());
+                        System.out.println("Удалена подзадача с id: " + subToDel.getId());
+                        exchange.sendResponseHeaders(200, 0);
                     } else {
-                        manager.deleteSubTaskById(getId(requestQuery.get()));
-                        writeResponse(exchange, "Подзадача c " + requestQuery.get() + " удалена", 200);
+                        System.out.println("Некорректный id для подзадачи: " + requestQuery.get());
+                        exchange.sendResponseHeaders(404, 0);
                     }
                     break;
                 case GetEpics:
                     List<Epic> epics = manager.getAllEpics();
                     if (epics.size() == 0) {
-                        writeResponse(exchange, "Эпиков пока не существует", 404);
+                        System.out.println("Список эпиков пуст");
+                        exchange.sendResponseHeaders(404, 0);
                     } else {
-                        writeResponse(exchange, gson.toJson(epics), 200);
+                        System.out.println("Получен список эпиков");
+                        sendText(exchange, gson.toJson(epics));
                     }
                     break;
                 case GetEpicById:
                     Epic epic = manager.getEpicById(getId(requestQuery.get()));
-                    if (epic == null) {
-                        writeResponse(exchange, "Эпик с " + requestQuery.get() + " не существует", 404);
+                    if (epic != null) {
+                        System.out.println("Получен эпик с id: " + epic.getId());
+                        sendText(exchange, gson.toJson(epic));
                     } else {
-                        writeResponse(exchange, gson.toJson(epic), 200);
+                        System.out.println("Некорректный id для эпика: " + requestQuery.get());
+                        exchange.sendResponseHeaders(404, 0);
                     }
                     break;
                 case PostEpic:
-                    Epic epicToPost = gson.fromJson(body, Epic.class);
-                    List<Epic> epicInMemory = manager.getAllEpics();
-                    for (Epic t : epicInMemory) {
-                        if (t.getId() == epicToPost.getId()) {
-                            manager.updateEpic(epicToPost);
-                            writeResponse(exchange, "Эпик с id:" + epicToPost.getId() + " обновлен", 200);
-                            return;
-                        }
+                    Epic epicToPost = gson.fromJson(readText(exchange), Epic.class);
+                    Epic oldEpic = manager.getEpicById(epicToPost.getId());
+                    if (oldEpic != null) {
+                        manager.updateEpic(epicToPost);
+                        System.out.println("Эпик с id: " + epicToPost.getId() + " обновлен");
+                        exchange.sendResponseHeaders(200, 0);
+                        return;
+                    } else {
+                        manager.addEpic(epicToPost);
+                        System.out.println("Эпик добавлен");
+                        exchange.sendResponseHeaders(200, 0);
+                        break;
                     }
-                    manager.addEpic(epicToPost);
-                    writeResponse(exchange, "Эпик добавлен", 200);
-                    break;
                 case DeleteEpics:
                     manager.clearAllEpics();
-                    writeResponse(exchange, "Все эпики удалены", 200);
+                    System.out.println("Все эпики удалены");
+                    exchange.sendResponseHeaders(200, 0);
                     break;
                 case DeleteEpicById:
-                    Epic epicToDelete = manager.getEpicById(getId(requestQuery.get()));
-                    if (epicToDelete == null) {
-                        writeResponse(exchange, "Эпик с " + requestQuery.get() + " не существует", 404);
+                    Epic epicToDel = manager.getEpicById(getId(requestQuery.get()));
+                    if (epicToDel != null) {
+                        manager.deleteEpicById(epicToDel.getId());
+                        System.out.println("Удален эпик с id: " + epicToDel.getId());
+                        exchange.sendResponseHeaders(200, 0);
                     } else {
-                        manager.deleteEpicById(getId(requestQuery.get()));
-                        writeResponse(exchange, "Эпик с id:" + requestQuery.get() + " удален", 200);
+                        System.out.println("Некорректный id для эпика: " + requestQuery.get());
+                        exchange.sendResponseHeaders(404, 0);
                     }
                     break;
                 case GetHistory:
                     List<Task> history = manager.getHistory();
                     if (history.size() == 0) {
-                        writeResponse(exchange, "История просмотров пустая", 404);
+                        System.out.println("История просмотров пустая");
+                        exchange.sendResponseHeaders(404, 0);
                     } else {
-                        writeResponse(exchange, gson.toJson(history), 200);
+                        System.out.println("Получена история просмотров");
+                        sendText(exchange, gson.toJson(history));
                     }
                     break;
                 case getPrioritizedTasks:
                     List<Task> listTasks = manager.getPrioritizedTasks();
                     if (listTasks.size() == 0) {
-                        writeResponse(exchange, "Список задач пуст", 404);
+                        System.out.println("Список задач пуст");
+                        exchange.sendResponseHeaders(404, 0);
                     } else {
-                        writeResponse(exchange, gson.toJson(listTasks), 200);
+                        System.out.println("Получен список приоритетных задач");
+                        sendText(exchange, gson.toJson(listTasks));
                     }
                     break;
                 case GetSubByEpic:
                     Epic epicWithSub = manager.getEpicById(getId(requestQuery.get()));
                     if (epicWithSub == null) {
-                        writeResponse(exchange, "Эпик с " + requestQuery.get() + " не существует", 404);
+                        System.out.println("Эпик с " + requestQuery.get() + " не существует");
+                        exchange.sendResponseHeaders(404, 0);
                     } else {
+                        System.out.println("Получены подзадачи эпика с " + requestQuery.get());
                         List<SubTask> subTaskByEpic = manager.getSubTaskByEpic(getId(requestQuery.get()));
-                        writeResponse(exchange, gson.toJson(subTaskByEpic), 200);
+                        sendText(exchange, gson.toJson(subTaskByEpic));
                     }
                     break;
                 case Unknown:
-                    writeResponse(exchange, "Такого эндпоинта не существует", 404);
+                    System.out.println("Такой эндпоинт не существует");
+                    exchange.sendResponseHeaders(405, 0);
                     break;
             }
+        } catch (
+                Exception e) {
+            e.printStackTrace();
+        } finally {
+            exchange.close();
         }
+
     }
 
     private Endpoint getEndpoint(String method, String[] path, Optional<String> query) {
@@ -289,24 +327,23 @@ public class HttpTaskServer {
         }
     }
 
-    private void writeResponse(HttpExchange exchange,
-                                      String responseString,
-                                      int responseCode) throws IOException {
-        if (responseString.isBlank()) {
-            exchange.sendResponseHeaders(responseCode, 0);
-        } else {
-            byte[] bytes = responseString.getBytes(DEFAULT_CHARSET);
-            exchange.sendResponseHeaders(responseCode, bytes.length);
-            try (OutputStream os = exchange.getResponseBody()) {
-                os.write(bytes);
-            }
-        }
-        exchange.close();
+    private String readText(HttpExchange h) throws IOException {
+        return new String(h.getRequestBody().readAllBytes(), DEFAULT_CHARSET);
+    }
+
+    private void sendText(HttpExchange h, String text) throws IOException {
+        byte[] resp = text.getBytes(DEFAULT_CHARSET);
+        h.getResponseHeaders().add("Content-Type", "application/json");
+        h.sendResponseHeaders(200, resp.length);
+        h.getResponseBody().write(resp);
     }
 
     private int getId(String str) {
-        StringBuilder sb = new StringBuilder(str);
-        String id = str.substring(3).toString();
-        return Integer.parseInt(id);
+        try {
+            String id = str.substring("id=".length());
+            return Integer.parseInt(id);
+        } catch (NumberFormatException e) {
+            return -1; // получили неверный идентификатор
+        }
     }
 }

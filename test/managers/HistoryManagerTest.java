@@ -1,5 +1,6 @@
 package managers;
 
+import managers.hisroryManager.HistoryManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tasks.Task;

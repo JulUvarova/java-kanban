@@ -1,4 +1,4 @@
-package managers;
+package managers.hisroryManager;
 
 import tasks.Task;
 

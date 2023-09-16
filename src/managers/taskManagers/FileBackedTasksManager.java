@@ -1,4 +1,4 @@
-package managers;
+package managers.taskManagers;
 
 import exceptions.*;
 import tasks.*;
@@ -16,16 +16,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     public FileBackedTasksManager(String saveFile) {
         this.saveFile = saveFile;
-    }
-
-    public static void main(String[] args) {
-        System.out.println("Восстанавливаем менеджер из памяти.");
-        FileBackedTasksManager fbtm = loadFromFile("saveFile.csv", "saveFile2");
-        System.out.println("Проверяем, что восстановилось из файла:"
-                + fbtm.getAllEpics()
-                + fbtm.getAllSubTasks()
-                + fbtm.getAllTasks());
-        System.out.println("Проверяем историю просмотров:" + fbtm.getHistory());
     }
 
     public static FileBackedTasksManager loadFromFile(String readFile, String writeFile) {
@@ -210,7 +200,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         save();
     }
 
-    private void save() {
+    protected void save() {
         try (FileWriter fileWriter = new FileWriter(saveFile)) {
             fileWriter.write(SAVEFILE_HEADLINE);
             for (Task task : tasks.values()) {

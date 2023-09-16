@@ -1,6 +1,8 @@
-package managers;
+package managers.taskManagers;
 
 import exceptions.TimeValidateException;
+import managers.Managers;
+import managers.hisroryManager.HistoryManager;
 import tasks.*;
 
 import java.time.LocalDateTime;

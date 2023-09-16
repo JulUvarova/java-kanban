@@ -10,10 +10,7 @@ import java.util.Map;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
-/**
- * Постман: https://www.getpostman.com/collections/a83b61d9e1c81c10575c
- */
-public class KVServer {
+public class KVServer {// Key-Value Server
     public static final int PORT = 8078;
     private final String apiToken;
     private final HttpServer server;
@@ -27,8 +24,41 @@ public class KVServer {
         server.createContext("/load", this::load);
     }
 
-    private void load(HttpExchange h) {
-        // TODO Добавьте получение значения по ключу
+//    public static class Main {
+//        public static void main(String[] args) throws IOException {
+//            new KVServer().start();
+//        }
+//    }
+
+    private void load(HttpExchange h) throws IOException {
+        try {
+            System.out.println("\n/load");
+            if (!hasAuth(h)) {
+                System.out.println("Запрос неавторизован, нужен параметр в query API_TOKEN со значением апи-ключа");
+                h.sendResponseHeaders(403, 0);
+                return;
+            }
+            if ("GET".equals(h.getRequestMethod())) {
+                String key = h.getRequestURI().getPath().substring("/load/".length());
+                if (key.isEmpty()) {
+                    System.out.println("Key для сохранения пустой. key указывается в пути: /load/{key}");
+                    h.sendResponseHeaders(400, 0);
+                    return;
+                }
+                if (!data.containsKey(key)) {
+                    data.put(key, "[]");
+                }
+                String dataByKey = data.get(key);
+                System.out.println("Данные по запросу " + key + " отправлены");
+                sendText(h, dataByKey);
+            } else {
+                System.out.println("/load ждёт POST-запрос, а получил: " + h.getRequestMethod());
+                h.sendResponseHeaders(405, 0);
+            }
+        } finally {
+            h.close();
+        }
+
     }
 
     private void save(HttpExchange h) throws IOException {
@@ -79,10 +109,15 @@ public class KVServer {
     }
 
     public void start() {
-        System.out.println("Запускаем сервер на порту " + PORT);
+        System.out.println("Запускаем KVServer на порту " + PORT);
         System.out.println("Открой в браузере http://localhost:" + PORT + "/");
         System.out.println("API_TOKEN: " + apiToken);
         server.start();
+    }
+
+    public void stop() {
+        server.stop(0);
+        System.out.println("Остановили сервер на порту " + PORT);
     }
 
     private String generateApiToken() {
