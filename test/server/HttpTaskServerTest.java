@@ -352,7 +352,7 @@ class HttpTaskServerTest {
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
         Task taskDel = manager.getTaskById(1);
-        assertEquals(null, taskDel, "Задача не удалена");
+        assertNull(taskDel, "Задача не удалена");
     }
 
     @Test
@@ -391,7 +391,7 @@ class HttpTaskServerTest {
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
         SubTask taskDel = manager.getSubTaskById(1);
-        assertEquals(null, taskDel, "Задача не удалена");
+        assertNull(taskDel, "Задача не удалена");
     }
 
     @Test
@@ -429,7 +429,7 @@ class HttpTaskServerTest {
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
         Epic taskDel = manager.getEpicById(1);
-        assertEquals(null, taskDel, "Задача не удалена");
+        assertNull(taskDel, "Задача не удалена");
     }
 
     @Test
