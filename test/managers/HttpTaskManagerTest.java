@@ -1,6 +1,5 @@
 package managers;
 
-import com.google.gson.Gson;
 import exceptions.RequestException;
 import managers.taskManagers.HttpTaskManager;
 import org.junit.jupiter.api.*;
@@ -34,8 +33,7 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
 
     @Test
     void saveAndLoadWithEmptyData() {
-        HttpTaskManager actualManager = new HttpTaskManager("http://localhost:8078");
-        actualManager.load();
+        HttpTaskManager actualManager = new HttpTaskManager("http://localhost:8078", true);
 
         assertTrue(manager.getAllTasks().isEmpty(), "Список с задачами не пустой.");
         assertTrue(actualManager.getAllTasks().isEmpty(), "Список с задачами не пустой.");
@@ -69,8 +67,7 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
                 LocalDateTime.of(2023, 8, 13, 19, 0), 120);
         manager.addTask(task1);
 
-        HttpTaskManager actualManager = new HttpTaskManager("http://localhost:8078");
-        actualManager.load();
+        HttpTaskManager actualManager = new HttpTaskManager("http://localhost:8078", true);
 
         assertEquals(manager.getAllTasks(), actualManager.getAllTasks(),
                 "Список задач после выгрузки не совпадает.");
@@ -102,8 +99,7 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
         manager.getSubTaskById(3);
         manager.getTaskById(1);
 
-        HttpTaskManager actualManager = new HttpTaskManager("http://localhost:8078");
-        actualManager.load();
+        HttpTaskManager actualManager = new HttpTaskManager("http://localhost:8078", true);
 
         assertEquals(manager.getAllTasks(), actualManager.getAllTasks(),
                 "Список задач после выгрузки не совпадает.");

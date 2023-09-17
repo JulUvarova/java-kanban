@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HttpTaskServerTest {
     HttpTaskServer server;
-    static KVServer kvServer;
     Gson gson = Managers.getGson();
     TaskManager manager;
     URI taskUri = URI.create("http://localhost:8080/tasks/task/");
@@ -34,15 +33,9 @@ class HttpTaskServerTest {
     URI prioriUri = URI.create("http://localhost:8080/tasks/");
     String id = "?id=";
 
-    @BeforeAll
-    static void startKV() throws IOException {
-        kvServer = new KVServer();
-        kvServer.start();
-    }
-
     @BeforeEach
     void start() throws IOException {
-        manager = Managers.getDefaultHttpTaskManager("http://localhost:8078");
+        manager = Managers.getDefaultTaskManager();
         server = new HttpTaskServer(manager);
         server.start();
     }
@@ -52,9 +45,16 @@ class HttpTaskServerTest {
         server.stop();
     }
 
-    @AfterAll
-    static void stopKV() {
-        kvServer.stop();
+    @Test
+    void postEmptyTask() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString("");
+        final HttpRequest request = HttpRequest.newBuilder()
+                .uri(taskUri)
+                .POST(body)
+                .build();
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
+        assertEquals(400, response.statusCode(), "Ответ сервера некорректный");
     }
 
     @Test
@@ -69,7 +69,7 @@ class HttpTaskServerTest {
                 .uri(taskUri)
                 .POST(body)
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
         task.setId(manager.getLastStaticId()); // иначе она id = 0
@@ -95,13 +95,25 @@ class HttpTaskServerTest {
                 .uri(taskUri)
                 .POST(body)
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
         Task actualTask = manager.getTaskById(1);
 
         assertNotNull(actualTask, "Задача не возвращается");
         assertEquals(taskUp, actualTask, "Задачи не совпадают");
+    }
+
+    @Test
+    void postEmptySubTask() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString("");
+        final HttpRequest request = HttpRequest.newBuilder()
+                .uri(subtaskUri)
+                .POST(body)
+                .build();
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
+        assertEquals(400, response.statusCode(), "Ответ сервера некорректный");
     }
 
     @Test
@@ -118,7 +130,7 @@ class HttpTaskServerTest {
                 .uri(subtaskUri)
                 .POST(body)
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
         subTask.setId(manager.getLastStaticId()); // иначе она id = 0
@@ -146,7 +158,7 @@ class HttpTaskServerTest {
                 .uri(subtaskUri)
                 .POST(body)
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
         SubTask actualTask = manager.getSubTaskById(2);
@@ -166,7 +178,7 @@ class HttpTaskServerTest {
                 .uri(epicUri)
                 .POST(body)
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
         epic.setId(manager.getLastStaticId());
@@ -176,6 +188,17 @@ class HttpTaskServerTest {
         assertEquals(epic, actualTask, "Задачи не совпадают");
     }
 
+    @Test
+    void postEmptyEpic() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString("");
+        final HttpRequest request = HttpRequest.newBuilder()
+                .uri(epicUri)
+                .POST(body)
+                .build();
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
+        assertEquals(400, response.statusCode(), "Ответ сервера некорректный");
+    }
     @Test
     void updateEpic() throws IOException, InterruptedException {
         Epic epic = new Epic("Эпик", "");
@@ -190,7 +213,7 @@ class HttpTaskServerTest {
                 .uri(epicUri)
                 .POST(body)
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
         Epic actualTask = manager.getEpicById(1);
@@ -347,7 +370,7 @@ class HttpTaskServerTest {
                 .uri(URI.create(taskUri + id + "1"))
                 .DELETE()
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
 
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
@@ -366,7 +389,7 @@ class HttpTaskServerTest {
                 .uri(taskUri)
                 .DELETE()
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
 
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
@@ -386,7 +409,7 @@ class HttpTaskServerTest {
                 .uri(URI.create(subtaskUri + id + "2"))
                 .DELETE()
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
 
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
@@ -407,7 +430,7 @@ class HttpTaskServerTest {
                 .uri(subtaskUri)
                 .DELETE()
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
 
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
@@ -424,7 +447,7 @@ class HttpTaskServerTest {
                 .uri(URI.create(epicUri + id + "1"))
                 .DELETE()
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
 
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
@@ -442,7 +465,7 @@ class HttpTaskServerTest {
                 .uri(epicUri)
                 .DELETE()
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
 
         assertEquals(200, response.statusCode(), "Ответ сервера некорректный");
 
@@ -473,12 +496,6 @@ class HttpTaskServerTest {
         assertNotNull(actualTask.get(0), "Задача не возвращается");
         assertEquals(manager.getSubTaskByEpic(1).size(), actualTask.size(), "Количество задач не совпадает");
         assertEquals(subTask, actualTask.get(0), "Задачи не совпадают");
-//
-//        List<SubTask> subTasks = manager.getAllSubTasks();
-//        String actualSubTasks = response.body();
-//
-//        assertNotNull(actualSubTasks, "Задача не возвращается");
-//        assertEquals(subTasks, actualSubTasks, "Задачи не совпадают");
     }
 
     @Test
@@ -546,7 +563,7 @@ class HttpTaskServerTest {
                 .uri(taskUri)
                 .PUT(body)
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
 
         assertEquals(405, response.statusCode(), "Ответ сервера некорректный");
     }

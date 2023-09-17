@@ -69,7 +69,13 @@ public class HttpTaskServer {
                     }
                     break;
                 case PostTask:
-                    Task taskToPost = gson.fromJson(readText(exchange), Task.class);
+                    String strTask = readText(exchange);
+                    if (strTask.isEmpty()) {
+                        System.out.println("Не передана задача");
+                        exchange.sendResponseHeaders(400, 0);
+                        return;
+                    }
+                    Task taskToPost = gson.fromJson(strTask, Task.class);
                     Task oldTask = manager.getTaskById(taskToPost.getId());
                     if (oldTask != null) {
                         try {
@@ -129,7 +135,13 @@ public class HttpTaskServer {
                     }
                     break;
                 case PostSubTask:
-                    SubTask subToPost = gson.fromJson(readText(exchange), SubTask.class);
+                    String strSub = readText(exchange);
+                    if (strSub.isEmpty()) {
+                        System.out.println("Не передана задача");
+                        exchange.sendResponseHeaders(400, 0);
+                        return;
+                    }
+                    SubTask subToPost = gson.fromJson(strSub, SubTask.class);
                     SubTask oldSub = manager.getSubTaskById(subToPost.getId());
                     if (oldSub != null) {
                         try {
@@ -189,7 +201,13 @@ public class HttpTaskServer {
                     }
                     break;
                 case PostEpic:
-                    Epic epicToPost = gson.fromJson(readText(exchange), Epic.class);
+                    String strEpic = readText(exchange);
+                    if (strEpic.isEmpty()) {
+                        System.out.println("Не передана задача");
+                        exchange.sendResponseHeaders(400, 0);
+                        return;
+                    }
+                    Epic epicToPost = gson.fromJson(strEpic, Epic.class);
                     Epic oldEpic = manager.getEpicById(epicToPost.getId());
                     if (oldEpic != null) {
                         manager.updateEpic(epicToPost);

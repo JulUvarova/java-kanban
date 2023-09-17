@@ -24,12 +24,6 @@ public class KVServer {// Key-Value Server
         server.createContext("/load", this::load);
     }
 
-//    public static class Main {
-//        public static void main(String[] args) throws IOException {
-//            new KVServer().start();
-//        }
-//    }
-
     private void load(HttpExchange h) throws IOException {
         try {
             System.out.println("\n/load");

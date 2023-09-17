@@ -9,17 +9,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class KVTaskClient {
-    private String uri;
-    private String token;
-    private HttpClient client;
+    private final String uri;
+    private final String token;
+    private final HttpClient client;
 
     public KVTaskClient(String uri){
         this.uri = uri;
         client = HttpClient.newHttpClient();
-        register(uri);
+        this.token = register();
     }
 
-    public void register(String uri) {
+    public String register() {
         try {
             HttpRequest.Builder rb = HttpRequest.newBuilder();
             HttpRequest request = rb
@@ -30,8 +30,8 @@ public class KVTaskClient {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
-                token = response.body().toString();
                 System.out.println("Получен токен: " + token);
+                return response.body().toString();
             } else {
                 throw new RequestException("Ошибка регистрации. Код ответа от KVServer: " + response.statusCode());
             }
@@ -49,7 +49,7 @@ public class KVTaskClient {
                     .uri(URI.create(uri + "/save/" + key + "?API_TOKEN=" + token))
                     .version(HttpClient.Version.HTTP_1_1)
                     .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
 
             if (response.statusCode() == 200) {
                 System.out.println("Данные по ключу " + key + " сохранены");

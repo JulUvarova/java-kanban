@@ -21,12 +21,19 @@ public class HttpTaskManager extends FileBackedTasksManager {
     public static final String HISTORY_KEY = "history";
 
 
-    public HttpTaskManager(String uriToKVServer) {
+    public HttpTaskManager(String uriToKVServer, boolean isLoad) {
         super(null);
         this.client = new KVTaskClient(uriToKVServer);
+        if (isLoad) {
+            load();
+        }
     }
 
-    public void load() {
+    public HttpTaskManager(String uri) {
+        this(uri, false);
+    }
+
+    private void load() {
         int maxId = 0;
 
         String strTasks = client.load(TASK_KEY);
@@ -36,9 +43,7 @@ public class HttpTaskManager extends FileBackedTasksManager {
         for (Task task : listTask) {
             tasks.put(task.getId(), task);
             prioritizedTasks.add(task);
-            if (task.getId() > maxId) {
-                maxId = task.getId();
-            }
+            maxId = findMaxId(maxId, task.getId());
         }
 
         String strEpics = client.load(EPIC_KEY);
@@ -47,9 +52,7 @@ public class HttpTaskManager extends FileBackedTasksManager {
         List<Epic> listEpics = gson.fromJson(strEpics, epicType);
         for (Epic task : listEpics) {
             epics.put(task.getId(), task);
-            if (task.getId() > maxId) {
-                maxId = task.getId();
-            }
+            maxId = findMaxId(maxId, task.getId());
         }
 
         String strSubTasks = client.load(SUBTASK_KEY);
@@ -59,9 +62,7 @@ public class HttpTaskManager extends FileBackedTasksManager {
         for (SubTask task : listSubtasks) {
             subTasks.put(task.getId(), task);
             prioritizedTasks.add(task);
-            if (task.getId() > maxId) {
-                maxId = task.getId();
-            }
+            maxId = findMaxId(maxId, task.getId());
         }
 
         staticId = maxId;
@@ -97,5 +98,9 @@ public class HttpTaskManager extends FileBackedTasksManager {
                 .collect(Collectors.toList());
         String jsonHistory = gson.toJson(historyId);
         client.put(HISTORY_KEY, jsonHistory);
+    }
+
+    private int findMaxId(int a, int b) {
+        return Math.max(a, b);
     }
 }
